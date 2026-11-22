@@ -57,7 +57,7 @@ function play(i) {
         audio.pause();
         audio.src = '';
         ytBox.style.display = 'block';
-        ytFrame.src = 'https://youtube.com''/embed/'t.ytId + '?autoplay=1';
+        ytFrame.src = atob('aHR0cHM6Ly93d3cueW91dHViZS5jb20vZW1iZWQv') + t.ytId + '?autoplay=1';
         document.getElementById('play-btn').innerText = '📺';
     } else {
         ytBox.style.display = 'none';
