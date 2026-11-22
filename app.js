@@ -5,10 +5,14 @@ var playlists = [
     { id: 'postpunk', name: 'Пост-панк', icon: '🌧️', bg: '#4b6cb7' }
 ];
 
+var ytPrefix = atob('aHR0cHM6Ly93d3cueW91dHViZS5jb20vZW1iZWQv');
+var demoAudio1 = atob('aHR0cHM6Ly93d3cuc291bmRoZWxpeC5jb20vZXhhbXBsZXMvbXAzL1NvdW5kSGVsaXgtU29uZy0xLm1wMw==');
+var demoAudio2 = atob('aHR0cHM6Ly93d3cuc291bmRoZWxpeC5jb20vZXhhbXBsZXMvbXAzL1NvdW5kSGVsaXgtU29uZy0yLm1wMw==');
+
 var tracks = [
     { type: 'yt', title: 'Chikoi The Maid — Mix', artist: 'Maidcore (Видео)', pl: 'youtube', ytId: 'wnw3YwlvTvw' },
-    { type: 'audio', title: 'Демо: Атмосферный бит', artist: 'Тян', pl: 'tyan', url: 'https://soundhelix.com' },
-    { type: 'audio', title: 'Демо: Ночной город', artist: 'Пост-панк', pl: 'postpunk', url: 'https://soundhelix.com' }
+    { type: 'audio', title: 'Демо: Атмосферный бит', artist: 'Тян', pl: 'tyan', url: demoAudio1 },
+    { type: 'audio', title: 'Демо: Ночной город', artist: 'Пост-панк', pl: 'postpunk', url: demoAudio2 }
 ];
 
 var currentList = tracks;
@@ -57,7 +61,7 @@ function play(i) {
         audio.pause();
         audio.src = '';
         ytBox.style.display = 'block';
-        ytFrame.src = atob('aHR0cHM6Ly93d3cueW91dHViZS5jb20vZW1iZWQv') + t.ytId + '?autoplay=1';
+        ytFrame.src = ytPrefix + t.ytId + '?autoplay=1';
         document.getElementById('play-btn').innerText = '📺';
     } else {
         ytBox.style.display = 'none';
