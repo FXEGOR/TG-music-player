@@ -2,7 +2,7 @@ var playlists = [
     { id: 'all', name: 'Все треки', icon: '🎧', bg: '#1db954' },
     { id: 'tyan', name: 'Тян', icon: '🌸', bg: '#ff758c' },
     { id: 'postpunk', name: 'Пост-панк', icon: '🌧️', bg: '#4b6cb7' },
-    { id: 'youtube', name: 'ВК Видео', icon: '📺', bg: '#ff0000' }
+    { id: 'youtube', name: 'ВК Видео', icon: '📺', bg: '#0077ff' }
 ];
 
 var defaultCover = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzI4MjgyOCIvPjx0ZXh0IHg9IjUwIiB5PSI2NSIgZm9udC1zaXplPSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+8J+OtTwvdGV4dD48L3N2Zz4=';
@@ -66,7 +66,7 @@ function renderTracks() {
     tBox.innerHTML = '';
     currentList.forEach(function(t, i) {
         var d = document.createElement('div');
-        var isCurrent = (t.type === 'audio' && audio.src && decodeURI(audio.src).indexOf(t.url) !== -1) || (t.type === 'yt' && ytFrame.src && ytFrame.src.indexOf(t.ytId) !== -1);
+        var isCurrent = (t.type === 'audio' && audio.src && decodeURI(audio.src).indexOf(t.url) !== -1) || (t.type === 'yt' && ytFrame.src && ytFrame.src.indexOf(t.ytId.split('_').pop()) !== -1);
         d.className = 'track' + (isCurrent ? ' active' : '');
         var img = document.createElement('img');
         img.className = 't-img';
@@ -83,19 +83,28 @@ function renderTracks() {
 function play(i) {
     idx = i;
     var t = currentList[idx];
-    
-if (t.type === 'yt') {
-        audio.pause(); audio.src = '';
+    if (!t) return;
+    var cov = t.cover ? t.cover : defaultCover;
+    var titleClean = cleanName(t.title);
+    document.getElementById('mini-cover').src = cov;
+    document.getElementById('big-cover').src = cov;
+    document.getElementById('now-playing').innerText = titleClean;
+    document.getElementById('big-title').innerText = titleClean;
+    document.getElementById('big-artist').innerText = t.artist || '';
+
+    if (t.type === 'yt') {
+        audio.pause();
+        audio.src = '';
         ytBox.style.display = 'block';
         var ids = t.ytId.split('_');
         ytFrame.src = vkPrefix + ids.shift() + '&id=' + ids.shift() + '&hd=2&autoplay=1';
         syncBtns('📺');
     } else {
-        ytBox.style.display = 'none'; ytFrame.src = '';
+        ytBox.style.display = 'none';
+        ytFrame.src = '';
         audio.src = t.url;
         audio.play();
         syncBtns('⏸');
-
     }
     renderTracks();
 }
@@ -183,7 +192,6 @@ function openModal() { document.getElementById('add-modal').style.display = 'fle
 function closeModal() { document.getElementById('add-modal').style.display = 'none'; }
 
 function saveYtVideo() {
-    function saveYtVideo() {
     var url = document.getElementById('yt-url-input').value.trim();
     var title = document.getElementById('yt-title-input').value.trim() || 'ВК Видео';
     var match = url.match(/video(-?\d+_\d+)/);
@@ -196,9 +204,6 @@ function saveYtVideo() {
     document.getElementById('yt-title-input').value = '';
     closeModal();
     filterTracks(currentPl, document.getElementById('pl-title').innerText);
-}
-
-
 }
 
 init();
