@@ -7,14 +7,16 @@ var playlists = [
 
 var ytPrefix = atob('aHR0cHM6Ly93d3cueW91dHViZS5jb20vZW1iZWQv');
 var demoAudio1 = atob('aHR0cHM6Ly93d3cuc291bmRoZWxpeC5jb20vZXhhbXBsZXMvbXAzL1NvdW5kSGVsaXgtU29uZy0xLm1wMw==');
-var demoAudio2 = atob('aHR0cHM6Ly93d3cuc291bmRoZWxpeC5jb20vZXhhbXBsZXMvbXAzL1NvdW5kSGVsaXgtU29uZy0yLm1wMw==');
 
-var tracks = [
-    { type: 'yt', title: 'Chikoi The Maid — Mix', artist: 'Maidcore (Видео)', pl: 'youtube', ytId: 'wnw3YwlvTvw' },
-    { type: 'audio', title: 'Демо: Атмосферный бит', artist: 'Тян', pl: 'tyan', url: demoAudio1 },
-    { type: 'audio', title: 'Демо: Ночной город', artist: 'Пост-панк', pl: 'postpunk', url: demoAudio2 }
+var defaultTracks = [
+    { type: 'yt', title: 'Lofi Hip Hop Radio (Тест видео)', artist: 'YouTube', pl: 'youtube', ytId: 'jfKfPfyJRdk' },
+    { type: 'audio', title: 'Демо: Атмосферный бит', artist: 'Тян', pl: 'tyan', url: demoAudio1 }
 ];
 
+var savedTracks = JSON.parse(localStorage.getItem('my_tg_tracks') || '[]');
+var tracks = defaultTracks.concat(savedTracks);
+
+var currentPl = 'all';
 var currentList = tracks;
 var idx = 0;
 var audio = document.getElementById('audio');
@@ -34,6 +36,7 @@ function init() {
 }
 
 function filterTracks(id, name) {
+    currentPl = id;
     document.getElementById('pl-title').innerText = name;
     currentList = (id === 'all') ? tracks : tracks.filter(function(t) { return t.pl === id; });
     renderTracks();
@@ -46,8 +49,20 @@ function renderTracks() {
         var d = document.createElement('div');
         var isCurrent = (t.type === 'audio' && audio.src === t.url) || (t.type === 'yt' && ytFrame.src.indexOf(t.ytId) !== -1);
         d.className = 'track' + (isCurrent ? ' active' : '');
-        d.innerText = (t.type === 'yt' ? '📺 ' : '🎵 ') + t.title + ' — ' + t.artist;
-        d.onclick = function() { play(i); };
+        
+        var titleSpan = document.createElement('span');
+        titleSpan.innerText = (t.type === 'yt' ? '📺 ' : '🎵 ') + t.title;
+        titleSpan.style.flex = '1';
+        titleSpan.onclick = function() { play(i); };
+        d.appendChild(titleSpan);
+
+        if (t.custom) {
+            var del = document.createElement('button');
+            del.className = 'del-btn';
+            del.innerText = '✖';
+            del.onclick = function(e) { e.stopPropagation(); deleteTrack(t.ytId); };
+            d.appendChild(del);
+        }
         tBox.appendChild(d);
     });
 }
@@ -56,7 +71,6 @@ function play(i) {
     idx = i;
     var t = currentList[idx];
     if (!t) return;
-
     if (t.type === 'yt') {
         audio.pause();
         audio.src = '';
@@ -70,7 +84,6 @@ function play(i) {
         audio.play();
         document.getElementById('play-btn').innerText = '⏸';
     }
-
     document.getElementById('now-playing').innerText = t.title;
     renderTracks();
 }
@@ -84,5 +97,42 @@ function togglePlay() {
 
 function nextTrack() { play((idx + 1) % currentList.length); }
 function shufflePlay() { play(Math.floor(Math.random() * currentList.length)); }
+
+function openModal() { document.getElementById('add-modal').style.display = 'flex'; }
+function closeModal() { document.getElementById('add-modal').style.display = 'none'; }
+
+function extractYtId(url) {
+    var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+    var match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
+function saveYtVideo() {
+    var url = document.getElementById('yt-url-input').value.trim();
+    var title = document.getElementById('yt-title-input').value.trim() || 'YouTube Видео';
+    var videoId = extractYtId(url);
+    
+    if (!videoId) {
+        alert('Не удалось распознать ссылку на YouTube!');
+        return;
+    }
+
+    var newTrack = { type: 'yt', title: title, artist: 'YouTube', pl: 'youtube', ytId: videoId, custom: true };
+    savedTracks.push(newTrack);
+    localStorage.setItem('my_tg_tracks', JSON.stringify(savedTracks));
+    tracks = defaultTracks.concat(savedTracks);
+    
+    document.getElementById('yt-url-input').value = '';
+    document.getElementById('yt-title-input').value = '';
+    closeModal();
+    filterTracks(currentPl, document.getElementById('pl-title').innerText);
+}
+
+function deleteTrack(ytId) {
+    savedTracks = savedTracks.filter(function(t) { return t.ytId !== ytId; });
+    localStorage.setItem('my_tg_tracks', JSON.stringify(savedTracks));
+    tracks = defaultTracks.concat(savedTracks);
+    filterTracks(currentPl, document.getElementById('pl-title').innerText);
+}
 
 init();
