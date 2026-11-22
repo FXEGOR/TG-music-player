@@ -74,6 +74,7 @@
         <h2 style="margin:0;">Медиатека</h2>
         <div class="top-btns">
             <button class="btn-dark" onclick="openSettings()">⚙️</button>
+            <button class="btn-dark" onclick="openNoteModal()">📝 Заметка</button>
             <button class="btn-accent" onclick="openModal()">➕ Видео</button>
         </div>
     </div>
@@ -178,6 +179,19 @@
             </div>
         </div>
     </div>
+        
+<div class="modal" id="note-modal">
+    <div class="modal-card">
+        <h3 style="margin-top:0;">Новая карточка / Заметка</h3>
+        <input type="text" id="note-name" placeholder="Артист или название трека...">
+        <input type="text" id="note-tag" placeholder="Жанр или пометка (например: на будущее, мейдкор)">
+        <input type="text" id="note-link" placeholder="Ссылка на ВК, ТГ или YouTube (необязательно)">
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <button class="btn-dark" onclick="closeNoteModal()">Отмена</button>
+            <button class="btn-accent" onclick="saveNote()">Сохранить</button>
+        </div>
+    </div>
+</div>
 
     <div id="err-box" style="display:none; background:#600; color:#fff; padding:10px; border-radius:8px; margin:12px 0; font-size:12px;"></div>
     <script>
@@ -187,6 +201,6 @@
 
     <audio id="audio"></audio>
     <script src="tracks.js"></script>
-    <script src="app.js?v=15"></script>
+    <script src="app.js?v=16"></script>
 </body>
 </html>
