@@ -20,7 +20,8 @@ var ytBox = document.getElementById('yt-container');
 var ytFrame = document.getElementById('yt-frame');
 
 function cleanName(name) {
-    return name ? name.replace(/\.(mp3|m4a|ogg|wav)$/i, '').replace(/,\s*$/, '') : 'Без названия';
+    var str = Array.isArray(name) ? name.join('') : String(name || 'Без названия');
+    return str.replace(/\.(mp3|m4a|ogg|wav)$/i, '').replace(/,\s*$/, '');
 }
 
 function init() {
