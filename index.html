@@ -200,6 +200,15 @@
     </script>
 
     <audio id="audio"></audio>
+      <div id="err-box" style="display:none; background:#600; color:#fff; padding:10px; border-radius:8px; margin:12px 0; font-size:12px;"></div>
+    <script>
+        window.onerror = function(msg, url, line) {
+            var b = document.getElementById('err-box');
+            b.style.display = 'block';
+            b.innerText = 'Ошибка: ' + msg + ' (строка ' + line + ')';
+        };
+    </script>
+      
     <script src="tracks.js"></script>
     <script src="app.js?v=16"></script>
 </body>
