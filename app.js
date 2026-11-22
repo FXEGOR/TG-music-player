@@ -13,7 +13,7 @@ var myMusic = (typeof customMusic !== 'undefined') ? customMusic : [];
 var tracks = myMusic.slice();
 
 var currentPl = 'all';
-var currentList = tracks.slice();
+var currentList = tracks.filter(function(t) { return t.type !== 'note'; });
 var idx = 0;
 var repeatMode = 0;
 var audio = document.getElementById('audio');
@@ -68,8 +68,7 @@ function init() {
     });
     loadCloudTracks(function() {
         tracks = myMusic.concat(savedTracks);
-        currentList = tracks.slice();
-        renderTracks();
+        filterTracks('all', 'Все треки');
     });
 }
 
@@ -87,7 +86,7 @@ function filterTracks(id, name) {
 
 function searchTracks() {
     var q = document.getElementById('search-input').value.toLowerCase().trim();
-    var base = (currentPl === 'all') ? tracks : tracks.filter(function(t) { return t.pl === currentPl; });
+    var base = (currentPl === 'all') ? tracks.filter(function(t) { return t.type !== 'note'; }) : tracks.filter(function(t) { return t.pl === currentPl; });
     if (!q) {
         currentList = base.slice();
     } else {
@@ -158,13 +157,10 @@ function renderTracks() {
     });
 }
 
-   
-}
-
 function play(i) {
     idx = i;
     var t = currentList[idx];
-    if (!t) return;
+    if (!t || t.type === 'note') return;
     var cov = t.cover ? t.cover : defaultCover;
     var titleClean = cleanName(t.title);
     document.getElementById('mini-cover').src = cov;
@@ -269,8 +265,25 @@ function toggleVolPopup() { document.getElementById('vol-popup').classList.toggl
 function changeVolume() { var v = document.getElementById('vol-slider').value; audio.volume = v; document.getElementById('vol-btn').innerText = (v == 0) ? '🔇' : (v < 0.5 ? '🔉' : '🔊'); }
 function openFull() { document.getElementById('full-screen').classList.add('open'); }
 function closeFull() { document.getElementById('full-screen').classList.remove('open'); }
+function openModal() { document.getElementById('add-modal').style.display = 'flex'; }
+function closeModal() { document.getElementById('add-modal').style.display = 'none'; }
 function openNoteModal() { document.getElementById('note-modal').style.display = 'flex'; }
 function closeNoteModal() { document.getElementById('note-modal').style.display = 'none'; }
+
+function saveYtVideo() {
+    var url = document.getElementById('yt-url-input').value.trim();
+    var title = document.getElementById('yt-title-input').value.trim() || 'ВК Видео';
+    var match = url.match(/video(-?\d+_\d+)/);
+    var videoId = match ? match.pop() : null;
+    if (!videoId) { alert('Не удалось распознать ссылку! Нужна ссылка вида ://vk.com'); return; }
+    savedTracks.push({ type: 'yt', title: title, artist: 'ВК Видео', pl: 'youtube', ytId: videoId, custom: true });
+    saveCloudTracks();
+    tracks = myMusic.concat(savedTracks);
+    document.getElementById('yt-url-input').value = '';
+    document.getElementById('yt-title-input').value = '';
+    closeModal();
+    filterTracks(currentPl, document.getElementById('pl-title').innerText);
+}
 
 function saveNote() {
     var name = document.getElementById('note-name').value.trim();
@@ -301,22 +314,6 @@ function deleteNote(id) {
     filterTracks(currentPl, document.getElementById('pl-title').innerText);
 }
 
-
-function saveYtVideo() {
-    var url = document.getElementById('yt-url-input').value.trim();
-    var title = document.getElementById('yt-title-input').value.trim() || 'ВК Видео';
-    var match = url.match(/video(-?\d+_\d+)/);
-    var videoId = match ? match.pop() : null;
-    if (!videoId) { alert('Не удалось распознать ссылку! Нужна ссылка вида ://vk.com'); return; }
-    savedTracks.push({ type: 'yt', title: title, artist: 'ВК Видео', pl: 'youtube', ytId: videoId, custom: true });
-    saveCloudTracks();
-    tracks = myMusic.concat(savedTracks);
-    document.getElementById('yt-url-input').value = '';
-    document.getElementById('yt-title-input').value = '';
-    closeModal();
-    filterTracks(currentPl, document.getElementById('pl-title').innerText);
-}
-
 function deleteVideo(vid) {
     savedTracks = savedTracks.filter(function(t) { return t.ytId !== vid; });
     saveCloudTracks();
@@ -335,7 +332,7 @@ function exportData() {
 }
 
 function importData() {
-    var str = prompt('Вставь скопированный код списка видео:');
+    var str = prompt('Вставь скопированный код списка:');
     if (!str) return;
     try {
         var parsed = JSON.parse(str);
@@ -345,9 +342,11 @@ function importData() {
             tracks = myMusic.concat(savedTracks);
             filterTracks(currentPl, document.getElementById('pl-title').innerText);
             closeSettings();
-            alert('Готово! Перенесено видео: ' + savedTracks.length);
+            alert('Готово! Перенесено записей: ' + savedTracks.length);
         }
     } catch(e) { alert('Ошибка: неверный формат кода.'); }
 }
 
 init();
+
+
