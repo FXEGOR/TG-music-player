@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <script src="https://telegram.org"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FXMusic Player</title>
@@ -172,15 +173,12 @@
 
     <div id="err-box" style="display:none; background:#600; color:#fff; padding:10px; border-radius:8px; margin:12px 0; font-size:12px;"></div>
     <script>
-        window.onerror = function(msg, url, line) {
-            var b = document.getElementById('err-box');
-            b.style.display = 'block';
-            b.innerText = 'Ошибка: ' + msg + ' (строка ' + line + ')';
+        
         };
     </script>
 
     <audio id="audio"></audio>
     <script src="tracks.js"></script>
-    <script src="app.js?v=11"></script>
+    <script src="app.js?v=12"></script>
 </body>
 </html>
