@@ -107,8 +107,51 @@ function renderTracks() {
         titleSpan.innerText = cleanName(t.title);
         titleSpan.style.flex = '1';
         d.appendChild(titleSpan);
+        if (t.custom) {
+            var del = document.createElement('button');
+            del.innerText = '✖';
+            del.style.cssText = 'background:none; border:none; color:#777; font-size:16px; padding:4px 8px; cursor:pointer;';
+            del.onclick = function(e) { e.stopPropagation(); deleteVideo(t.ytId); };
+            d.appendChild(del);
+        }
         d.onclick = function() { play(i); };
         tBox.appendChild(d);
+    });
+}
+
+function deleteVideo(vid) {
+    savedTracks = savedTracks.filter(function(t) { return t.ytId !== vid; });
+    saveCloudTracks();
+    tracks = myMusic.concat(savedTracks);
+    filterTracks(currentPl, document.getElementById('pl-title').innerText);
+}
+
+function exportData() {
+    var str = JSON.stringify(savedTracks);
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(str);
+        alert('Код скопирован! Отправь его себе в Избранное и вставь на другом устройстве.');
+    } else {
+        prompt('Скопируй этот код вручную:', str);
+    }
+}
+
+function importData() {
+    var str = prompt('Вставь скопированный код списка видео:');
+    if (!str) return;
+    try {
+        var parsed = JSON.parse(str);
+        if (Array.isArray(parsed)) {
+            savedTracks = parsed;
+            saveCloudTracks();
+            tracks = myMusic.concat(savedTracks);
+            filterTracks(currentPl, document.getElementById('pl-title').innerText);
+            closeSettings();
+            alert('Готово! Перенесено видео: ' + savedTracks.length);
+        }
+    } catch(e) { alert('Ошибка: неверный формат кода.'); }
+}
+
     });
 }
 
