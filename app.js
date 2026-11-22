@@ -189,14 +189,14 @@ function closeModal() { document.getElementById('add-modal').style.display = 'no
 function saveYtVideo() {
     var url = document.getElementById('yt-url-input').value.trim();
     var title = document.getElementById('yt-title-input').value.trim() || 'YouTube Видео';
-    var parts = url.split('v=');
-var videoId = (parts.length > 1) ? parts[1].substring(0, 11) : url.split('/').pop().substring(0, 11);
+    var videoId = url.split('v=').pop().split('/').pop().substring(0, 11);
     if (!videoId || videoId.length < 11) { alert('Не удалось распознать ссылку!'); return; }
     savedTracks.push({ type: 'yt', title: title, artist: 'YouTube', pl: 'youtube', ytId: videoId, custom: true });
     localStorage.setItem('my_tg_tracks', JSON.stringify(savedTracks));
     tracks = myMusic.concat(savedTracks);
     closeModal();
     filterTracks(currentPl, document.getElementById('pl-title').innerText);
+
 }
 
 init();
