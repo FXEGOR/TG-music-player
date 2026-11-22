@@ -14,7 +14,9 @@ var defaultTracks = [
 ];
 
 var savedTracks = JSON.parse(localStorage.getItem('my_tg_tracks') || '[]');
-var tracks = defaultTracks.concat(savedTracks);
+var myMusic = (typeof customMusic !== 'undefined') ? customMusic : [];
+var tracks = myMusic.concat(savedTracks);
+
 
 var currentPl = 'all';
 var currentList = tracks;
