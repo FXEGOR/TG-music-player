@@ -149,3 +149,38 @@
             <h3 style="margin-top:0;">Настройки плеера</h3>
             <p style="color:var(--text-sub); font-size:14px; margin-bottom:12px;">Оформление интерфейса:</p>
             <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <button class="btn-dark" style="flex:1;" onclick="setTheme('default')">🌑 Стандартная (Spotify)</button>
+                <button class="btn-dark" style="flex:1;" onclick="setTheme('amoled')">🖤 Тёмная (AMOLED)</button>
+            </div>
+            <div style="display:flex; justify-content:flex-end;">
+                <button class="btn-accent" onclick="closeSettings()">Готово</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="add-modal">
+        <div class="modal-card">
+            <h3 style="margin-top:0;">Добавить YouTube видео</h3>
+            <input type="text" id="yt-url-input" placeholder="Вставь ссылку с YouTube...">
+            <input type="text" id="yt-title-input" placeholder="Название для списка">
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button class="btn-dark" onclick="closeModal()">Отмена</button>
+                <button class="btn-accent" onclick="saveYtVideo()">Добавить</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="err-box" style="display:none; background:#600; color:#fff; padding:10px; border-radius:8px; margin:12px 0; font-size:12px;"></div>
+    <script>
+        window.onerror = function(msg, url, line) {
+            var b = document.getElementById('err-box');
+            b.style.display = 'block';
+            b.innerText = 'Ошибка: ' + msg + ' (строка ' + line + ')';
+        };
+    </script>
+
+    <audio id="audio"></audio>
+    <script src="tracks.js"></script>
+    <script src="app.js?v=8"></script>
+</body>
+</html>
