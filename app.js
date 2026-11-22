@@ -1,5 +1,6 @@
 var playlists = [
     { id: 'all', name: 'Все треки', icon: '🎧', bg: '#1db954' },
+    { id: 'notes', name: 'Артисты и заметки', icon: '📝', bg: '#f59e0b' },
     { id: 'tyan', name: 'Тян', icon: '🌸', bg: '#ff758c' },
     { id: 'postpunk', name: 'Пост-панк', icon: '🌧️', bg: '#4b6cb7' },
     { id: 'youtube', name: 'ВК Видео', icon: '📺', bg: '#0077ff' }
@@ -76,7 +77,11 @@ function filterTracks(id, name) {
     currentPl = id;
     document.getElementById('pl-title').innerText = name;
     document.getElementById('search-input').value = '';
-    currentList = (id === 'all') ? tracks.slice() : tracks.filter(function(t) { return t.pl === id; });
+    if (id === 'all') {
+        currentList = tracks.filter(function(t) { return t.type !== 'note'; });
+    } else {
+        currentList = tracks.filter(function(t) { return t.pl === id; });
+    }
     renderTracks();
 }
 
@@ -97,6 +102,40 @@ function renderTracks() {
     tBox.innerHTML = '';
     currentList.forEach(function(t, i) {
         var d = document.createElement('div');
+        if (t.type === 'note') {
+            d.className = 'track';
+            d.style.opacity = t.done ? '0.5' : '1';
+            var check = document.createElement('button');
+            check.innerText = t.done ? '✅' : '⬜';
+            check.style.cssText = 'background:none; border:none; font-size:18px; cursor:pointer; padding:0;';
+            check.onclick = function(e) { e.stopPropagation(); toggleNoteDone(t.id); };
+            d.appendChild(check);
+
+            var info = document.createElement('div');
+            info.style.cssText = 'flex:1; min-width:0;';
+            info.innerHTML = '<div style="font-weight:bold; font-size:14px;' + (t.done ? 'text-decoration:line-through;' : '') + '">' + cleanName(t.title) + '</div>' +
+                             '<div style="font-size:12px; color:var(--text-sub); margin-top:2px;">' + (t.artist || '') + '</div>';
+            d.appendChild(info);
+
+            if (t.url) {
+                var linkBtn = document.createElement('a');
+                linkBtn.href = t.url;
+                linkBtn.target = '_blank';
+                linkBtn.innerText = '🔗';
+                linkBtn.style.cssText = 'text-decoration:none; font-size:18px; padding:4px;';
+                linkBtn.onclick = function(e) { e.stopPropagation(); };
+                d.appendChild(linkBtn);
+            }
+
+            var delN = document.createElement('button');
+            delN.innerText = '✖';
+            delN.style.cssText = 'background:none; border:none; color:#777; font-size:15px; padding:4px; cursor:pointer;';
+            delN.onclick = function(e) { e.stopPropagation(); deleteNote(t.id); };
+            d.appendChild(delN);
+            tBox.appendChild(d);
+            return;
+        }
+
         var isCurrent = (t.type === 'audio' && audio.src && decodeURI(audio.src).indexOf(t.url) !== -1) || (t.type === 'yt' && ytFrame.src && ytFrame.src.indexOf(t.ytId.split('_').pop()) !== -1);
         d.className = 'track' + (isCurrent ? ' active' : '');
         var img = document.createElement('img');
@@ -117,6 +156,9 @@ function renderTracks() {
         d.onclick = function() { play(i); };
         tBox.appendChild(d);
     });
+}
+
+   
 }
 
 function play(i) {
@@ -227,8 +269,38 @@ function toggleVolPopup() { document.getElementById('vol-popup').classList.toggl
 function changeVolume() { var v = document.getElementById('vol-slider').value; audio.volume = v; document.getElementById('vol-btn').innerText = (v == 0) ? '🔇' : (v < 0.5 ? '🔉' : '🔊'); }
 function openFull() { document.getElementById('full-screen').classList.add('open'); }
 function closeFull() { document.getElementById('full-screen').classList.remove('open'); }
-function openModal() { document.getElementById('add-modal').style.display = 'flex'; }
-function closeModal() { document.getElementById('add-modal').style.display = 'none'; }
+function openNoteModal() { document.getElementById('note-modal').style.display = 'flex'; }
+function closeNoteModal() { document.getElementById('note-modal').style.display = 'none'; }
+
+function saveNote() {
+    var name = document.getElementById('note-name').value.trim();
+    var tag = document.getElementById('note-tag').value.trim() || 'На будущее';
+    var link = document.getElementById('note-link').value.trim();
+    if (!name) { alert('Введи имя артиста или название!'); return; }
+    savedTracks.unshift({ id: Date.now(), type: 'note', title: name, artist: tag, pl: 'notes', url: link, done: false });
+    saveCloudTracks();
+    tracks = myMusic.concat(savedTracks);
+    document.getElementById('note-name').value = '';
+    document.getElementById('note-tag').value = '';
+    document.getElementById('note-link').value = '';
+    closeNoteModal();
+    filterTracks('notes', 'Артисты и заметки');
+}
+
+function toggleNoteDone(id) {
+    savedTracks.forEach(function(t) { if (t.id === id) t.done = !t.done; });
+    saveCloudTracks();
+    tracks = myMusic.concat(savedTracks);
+    filterTracks(currentPl, document.getElementById('pl-title').innerText);
+}
+
+function deleteNote(id) {
+    savedTracks = savedTracks.filter(function(t) { return t.id !== id; });
+    saveCloudTracks();
+    tracks = myMusic.concat(savedTracks);
+    filterTracks(currentPl, document.getElementById('pl-title').innerText);
+}
+
 
 function saveYtVideo() {
     var url = document.getElementById('yt-url-input').value.trim();
