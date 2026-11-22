@@ -26,7 +26,6 @@ function cleanName(name) {
 function init() {
     var savedTheme = localStorage.getItem('fx_theme') || 'default';
     setTheme(savedTheme);
-
     document.getElementById('mini-cover').src = defaultCover;
     document.getElementById('big-cover').src = defaultCover;
     var plBox = document.getElementById('playlists');
@@ -68,35 +67,29 @@ function renderTracks() {
         var d = document.createElement('div');
         var isCurrent = (t.type === 'audio' && audio.src && decodeURI(audio.src).indexOf(t.url) !== -1) || (t.type === 'yt' && ytFrame.src && ytFrame.src.indexOf(t.ytId) !== -1);
         d.className = 'track' + (isCurrent ? ' active' : '');
-        
         var img = document.createElement('img');
         img.className = 't-img';
         img.src = t.cover ? t.cover : defaultCover;
         d.appendChild(img);
-
         var titleSpan = document.createElement('span');
         titleSpan.innerText = cleanName(t.title);
         titleSpan.style.flex = '1';
         d.appendChild(titleSpan);
-
         d.onclick = function() { play(i); };
         tBox.appendChild(d);
     });
 }
-
 function play(i) {
     idx = i;
     var t = currentList[idx];
     if (!t) return;
     var cov = t.cover ? t.cover : defaultCover;
     var titleClean = cleanName(t.title);
-
     document.getElementById('mini-cover').src = cov;
     document.getElementById('big-cover').src = cov;
     document.getElementById('now-playing').innerText = titleClean;
     document.getElementById('big-title').innerText = titleClean;
     document.getElementById('big-artist').innerText = t.artist || '';
-
     if (t.type === 'yt') {
         audio.pause(); audio.src = '';
         ytBox.style.display = 'block';
@@ -125,14 +118,9 @@ function togglePlay() {
 
 function nextTrack() {
     if (!currentList.length) return;
-    if (idx + 1 < currentList.length) {
-        play(idx + 1);
-    } else if (repeatMode === 1) {
-        play(0);
-    } else {
-        audio.pause();
-        syncBtns('▶');
-    }
+    if (idx + 1 < currentList.length) { play(idx + 1); }
+    else if (repeatMode === 1) { play(0); }
+    else { audio.pause(); syncBtns('▶'); }
 }
 
 function prevTrack() {
@@ -152,40 +140,25 @@ function shuffleQueue() {
     }
     if (currentTrack) {
         var newIdx = currentList.indexOf(currentTrack);
-        if (newIdx > 0) {
-            currentList.splice(newIdx, 1);
-            currentList.unshift(currentTrack);
-        }
+        if (newIdx > 0) { currentList.splice(newIdx, 1); currentList.unshift(currentTrack); }
         idx = 0;
         renderTracks();
-    } else {
-        play(0);
-    }
+    } else { play(0); }
 }
 
 function toggleRepeat() {
     repeatMode = (repeatMode + 1) % 3;
     var b1 = document.getElementById('mini-rep-btn');
     var b2 = document.getElementById('big-rep-btn');
-    if (repeatMode === 0) {
-        b1.innerText = '🔁'; b2.innerText = '🔁';
-        b1.classList.remove('active'); b2.classList.remove('active');
-    } else if (repeatMode === 1) {
-        b1.innerText = '🔁'; b2.innerText = '🔁';
-        b1.classList.add('active'); b2.classList.add('active');
-    } else {
-        b1.innerText = '🔂'; b2.innerText = '🔂';
-        b1.classList.add('active'); b2.classList.add('active');
-    }
+    var icon = (repeatMode === 2) ? '🔂' : '🔁';
+    b1.innerText = icon; b2.innerText = icon;
+    b1.classList.toggle('active', repeatMode > 0);
+    b2.classList.toggle('active', repeatMode > 0);
 }
 
 audio.addEventListener('ended', function() {
-    if (repeatMode === 2) {
-        audio.currentTime = 0;
-        audio.play();
-    } else {
-        nextTrack();
-    }
+    if (repeatMode === 2) { audio.currentTime = 0; audio.play(); }
+    else { nextTrack(); }
 });
 
 audio.addEventListener('timeupdate', function() {
@@ -201,25 +174,9 @@ audio.addEventListener('timeupdate', function() {
     document.getElementById('big-time-dur').innerText = durStr;
 });
 
-function seekAudio(val) {
-    if (audio.duration) audio.currentTime = (val / 100) * audio.duration;
-}
-
-function fmtTime(sec) {
-    var m = Math.floor(sec / 60);
-    var s = Math.floor(sec % 60);
-    return m + ':' + (s < 10 ? '0' : '') + s;
-}
-
-function setTheme(theme) {
-    if (theme === 'amoled') {
-        document.body.classList.add('amoled-theme');
-    } else {
-        document.body.classList.remove('amoled-theme');
-    }
-    localStorage.setItem('fx_theme', theme);
-}
-
+function seekAudio(val) { if (audio.duration) audio.currentTime = (val / 100) * audio.duration; }
+function fmtTime(sec) { var m = Math.floor(sec / 60); var s = Math.floor(sec % 60); return m + ':' + (s < 10 ? '0' : '') + s; }
+function setTheme(theme) { document.body.classList.toggle('amoled-theme', theme === 'amoled'); localStorage.setItem('fx_theme', theme); }
 function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
 function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
 function toggleVolPopup() { document.getElementById('vol-popup').classList.toggle('open'); }
@@ -229,17 +186,11 @@ function closeFull() { document.getElementById('full-screen').classList.remove('
 function openModal() { document.getElementById('add-modal').style.display = 'flex'; }
 function closeModal() { document.getElementById('add-modal').style.display = 'none'; }
 
-function extractYtId(url) {
-    var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
-    var match = url.match(regExp);
-    return (match && match.length === 11) ? match : null;
-}
-
 function saveYtVideo() {
     var url = document.getElementById('yt-url-input').value.trim();
     var title = document.getElementById('yt-title-input').value.trim() || 'YouTube Видео';
-    var videoId = extractYtId(url);
-    if (!videoId) { alert('Не удалось распознать ссылку!'); return; }
+    var videoId = url.split('v=')[1] ? url.split('v=')[1].substring(0, 11) : url.split('/').pop().substring(0, 11);
+    if (!videoId || videoId.length < 11) { alert('Не удалось распознать ссылку!'); return; }
     savedTracks.push({ type: 'yt', title: title, artist: 'YouTube', pl: 'youtube', ytId: videoId, custom: true });
     localStorage.setItem('my_tg_tracks', JSON.stringify(savedTracks));
     tracks = myMusic.concat(savedTracks);
