@@ -1,22 +1,14 @@
 var playlists = [
     { id: 'all', name: 'Все треки', icon: '🎧', bg: '#1db954' },
-    { id: 'youtube', name: 'YouTube Видео', icon: '📺', bg: '#ff0000' },
     { id: 'tyan', name: 'Тян', icon: '🌸', bg: '#ff758c' },
-    { id: 'postpunk', name: 'Пост-панк', icon: '🌧️', bg: '#4b6cb7' }
+    { id: 'postpunk', name: 'Пост-панк', icon: '🌧️', bg: '#4b6cb7' },
+    { id: 'youtube', name: 'YouTube Видео', icon: '📺', bg: '#ff0000' }
 ];
 
 var ytPrefix = atob('aHR0cHM6Ly93d3cueW91dHViZS5jb20vZW1iZWQv');
-var demoAudio1 = atob('aHR0cHM6Ly93d3cuc291bmRoZWxpeC5jb20vZXhhbXBsZXMvbXAzL1NvdW5kSGVsaXgtU29uZy0xLm1wMw==');
-
-var defaultTracks = [
-    { type: 'yt', title: 'Lofi Hip Hop Radio (Тест видео)', artist: 'YouTube', pl: 'youtube', ytId: 'jfKfPfyJRdk' },
-    { type: 'audio', title: 'Демо: Атмосферный бит', artist: 'Тян', pl: 'tyan', url: demoAudio1 }
-];
-
 var savedTracks = JSON.parse(localStorage.getItem('my_tg_tracks') || '[]');
 var myMusic = (typeof customMusic !== 'undefined') ? customMusic : [];
 var tracks = myMusic.concat(savedTracks);
-
 
 var currentPl = 'all';
 var currentList = tracks;
@@ -49,7 +41,7 @@ function renderTracks() {
     tBox.innerHTML = '';
     currentList.forEach(function(t, i) {
         var d = document.createElement('div');
-        var isCurrent = (t.type === 'audio' && audio.src === t.url) || (t.type === 'yt' && ytFrame.src.indexOf(t.ytId) !== -1);
+        var isCurrent = (t.type === 'audio' && audio.src.indexOf(encodeURI(t.url)) !== -1) || (t.type === 'yt' && ytFrame.src.indexOf(t.ytId) !== -1);
         d.className = 'track' + (isCurrent ? ' active' : '');
         
         var titleSpan = document.createElement('span');
@@ -92,13 +84,68 @@ function play(i) {
 
 function togglePlay() {
     if (ytBox.style.display === 'block') return;
-    if (!audio.src) { play(0); return; }
-    if (audio.paused) { audio.play(); document.getElementById('play-btn').innerText = '⏸'; }
-    else { audio.pause(); document.getElementById('play-btn').innerText = '▶'; }
+    if (!audio.src && currentList.length > 0) { play(0); return; }
+    if (audio.paused) {
+        audio.play();
+        document.getElementById('play-btn').innerText = '⏸';
+    } else {
+        audio.pause();
+        document.getElementById('play-btn').innerText = '▶';
+    }
 }
 
-function nextTrack() { play((idx + 1) % currentList.length); }
-function shufflePlay() { play(Math.floor(Math.random() * currentList.length)); }
+function nextTrack() {
+    if (currentList.length === 0) return;
+    play((idx + 1) % currentList.length);
+}
+
+function prevTrack() {
+    if (currentList.length === 0) return;
+    if (audio.currentTime > 3) {
+        audio.currentTime = 0;
+    } else {
+        play((idx - 1 + currentList.length) % currentList.length);
+    }
+}
+
+function shufflePlay() {
+    if (currentList.length === 0) return;
+    play(Math.floor(Math.random() * currentList.length));
+}
+
+audio.addEventListener('ended', function() {
+    nextTrack();
+});
+
+audio.addEventListener('timeupdate', function() {
+    if (!audio.duration) return;
+    var pct = (audio.currentTime / audio.duration) * 100;
+    document.getElementById('seek-bar').value = pct;
+    document.getElementById('time-cur').innerText = fmtTime(audio.currentTime);
+    document.getElementById('time-dur').innerText = fmtTime(audio.duration);
+});
+
+function seekAudio() {
+    if (!audio.duration) return;
+    var seekTo = (document.getElementById('seek-bar').value / 100) * audio.duration;
+    audio.currentTime = seekTo;
+}
+
+function fmtTime(sec) {
+    var m = Math.floor(sec / 60);
+    var s = Math.floor(sec % 60);
+    return m + ':' + (s < 10 ? '0' : '') + s;
+}
+
+function toggleVolPopup() {
+    document.getElementById('vol-popup').classList.toggle('open');
+}
+
+function changeVolume() {
+    var v = document.getElementById('vol-slider').value;
+    audio.volume = v;
+    document.getElementById('vol-btn').innerText = (v == 0) ? '🔇' : (v < 0.5 ? '🔉' : '🔊');
+}
 
 function openModal() { document.getElementById('add-modal').style.display = 'flex'; }
 function closeModal() { document.getElementById('add-modal').style.display = 'none'; }
@@ -107,24 +154,17 @@ function extractYtId(url) {
     var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
     var match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
-
 }
 
 function saveYtVideo() {
     var url = document.getElementById('yt-url-input').value.trim();
     var title = document.getElementById('yt-title-input').value.trim() || 'YouTube Видео';
     var videoId = extractYtId(url);
-    
-    if (!videoId) {
-        alert('Не удалось распознать ссылку на YouTube!');
-        return;
-    }
-
+    if (!videoId) { alert('Не удалось распознать ссылку на YouTube!'); return; }
     var newTrack = { type: 'yt', title: title, artist: 'YouTube', pl: 'youtube', ytId: videoId, custom: true };
     savedTracks.push(newTrack);
     localStorage.setItem('my_tg_tracks', JSON.stringify(savedTracks));
-    tracks = defaultTracks.concat(savedTracks);
-    
+    tracks = myMusic.concat(savedTracks);
     document.getElementById('yt-url-input').value = '';
     document.getElementById('yt-title-input').value = '';
     closeModal();
@@ -134,7 +174,7 @@ function saveYtVideo() {
 function deleteTrack(ytId) {
     savedTracks = savedTracks.filter(function(t) { return t.ytId !== ytId; });
     localStorage.setItem('my_tg_tracks', JSON.stringify(savedTracks));
-    tracks = defaultTracks.concat(savedTracks);
+    tracks = myMusic.concat(savedTracks);
     filterTracks(currentPl, document.getElementById('pl-title').innerText);
 }
 
