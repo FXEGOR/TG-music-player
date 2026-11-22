@@ -2,11 +2,11 @@ var playlists = [
     { id: 'all', name: 'Все треки', icon: '🎧', bg: '#1db954' },
     { id: 'tyan', name: 'Тян', icon: '🌸', bg: '#ff758c' },
     { id: 'postpunk', name: 'Пост-панк', icon: '🌧️', bg: '#4b6cb7' },
-    { id: 'youtube', name: 'YouTube Видео', icon: '📺', bg: '#ff0000' }
+    { id: 'youtube', name: 'ВК Видео', icon: '📺', bg: '#ff0000' }
 ];
 
 var defaultCover = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzI4MjgyOCIvPjx0ZXh0IHg9IjUwIiB5PSI2NSIgZm9udC1zaXplPSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+8J+OtTwvdGV4dD48L3N2Zz4=';
-var ytPrefix = atob('aHR0cHM6Ly93d3cueW91dHViZS5jb20vZW1iZWQv');
+var vkPrefix = atob('aHR0cHM6Ly92ay5jb20vdmlkZW9fZXh0LnBocD9vaWQ9');
 var savedTracks = JSON.parse(localStorage.getItem('my_tg_tracks') || '[]');
 var myMusic = (typeof customMusic !== 'undefined') ? customMusic : [];
 var tracks = myMusic.concat(savedTracks);
@@ -92,10 +92,13 @@ function play(i) {
     document.getElementById('big-title').innerText = titleClean;
     document.getElementById('big-artist').innerText = t.artist || '';
     if (t.type === 'yt') {
-        audio.pause(); audio.src = '';
-        ytBox.style.display = 'block';
-        ytFrame.src = ytPrefix + t.ytId + '?autoplay=1';
-        syncBtns('📺');
+    audio.pause(); audio.src = '';
+    ytBox.style.display = 'block';
+    var ids = t.ytId.split('_');
+    ytFrame.src = vkPrefix + ids.shift() + '&id=' + ids.shift() + '&hd=2&autoplay=1';
+    syncBtns('📺');
+}
+
     } else {
         ytBox.style.display = 'none'; ytFrame.src = '';
         audio.src = t.url;
@@ -188,15 +191,21 @@ function openModal() { document.getElementById('add-modal').style.display = 'fle
 function closeModal() { document.getElementById('add-modal').style.display = 'none'; }
 
 function saveYtVideo() {
+    function saveYtVideo() {
     var url = document.getElementById('yt-url-input').value.trim();
-    var title = document.getElementById('yt-title-input').value.trim() || 'YouTube Видео';
-    var videoId = url.split('v=').pop().split('/').pop().substring(0, 11);
-    if (!videoId || videoId.length < 11) { alert('Не удалось распознать ссылку!'); return; }
-    savedTracks.push({ type: 'yt', title: title, artist: 'YouTube', pl: 'youtube', ytId: videoId, custom: true });
+    var title = document.getElementById('yt-title-input').value.trim() || 'ВК Видео';
+    var match = url.match(/video(-?\d+_\d+)/);
+    var videoId = match ? match.pop() : null;
+    if (!videoId) { alert('Не удалось распознать ссылку! Нужна ссылка вида ://vk.com'); return; }
+    savedTracks.push({ type: 'yt', title: title, artist: 'ВК Видео', pl: 'youtube', ytId: videoId, custom: true });
     localStorage.setItem('my_tg_tracks', JSON.stringify(savedTracks));
     tracks = myMusic.concat(savedTracks);
+    document.getElementById('yt-url-input').value = '';
+    document.getElementById('yt-title-input').value = '';
     closeModal();
     filterTracks(currentPl, document.getElementById('pl-title').innerText);
+}
+
 
 }
 
