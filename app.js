@@ -71,6 +71,7 @@ function init() {
         renderTracks();
     });
 }
+
 function filterTracks(id, name) {
     currentPl = id;
     document.getElementById('pl-title').innerText = name;
@@ -91,7 +92,6 @@ function searchTracks() {
     }
     renderTracks();
 }
-
 function renderTracks() {
     var tBox = document.getElementById('tracks');
     tBox.innerHTML = '';
@@ -116,42 +116,6 @@ function renderTracks() {
         }
         d.onclick = function() { play(i); };
         tBox.appendChild(d);
-    });
-}
-
-function deleteVideo(vid) {
-    savedTracks = savedTracks.filter(function(t) { return t.ytId !== vid; });
-    saveCloudTracks();
-    tracks = myMusic.concat(savedTracks);
-    filterTracks(currentPl, document.getElementById('pl-title').innerText);
-}
-
-function exportData() {
-    var str = JSON.stringify(savedTracks);
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(str);
-        alert('Код скопирован! Отправь его себе в Избранное и вставь на другом устройстве.');
-    } else {
-        prompt('Скопируй этот код вручную:', str);
-    }
-}
-
-function importData() {
-    var str = prompt('Вставь скопированный код списка видео:');
-    if (!str) return;
-    try {
-        var parsed = JSON.parse(str);
-        if (Array.isArray(parsed)) {
-            savedTracks = parsed;
-            saveCloudTracks();
-            tracks = myMusic.concat(savedTracks);
-            filterTracks(currentPl, document.getElementById('pl-title').innerText);
-            closeSettings();
-            alert('Готово! Перенесено видео: ' + savedTracks.length);
-        }
-    } catch(e) { alert('Ошибка: неверный формат кода.'); }
-}
-
     });
 }
 
@@ -281,5 +245,37 @@ function saveYtVideo() {
     filterTracks(currentPl, document.getElementById('pl-title').innerText);
 }
 
-init();
+function deleteVideo(vid) {
+    savedTracks = savedTracks.filter(function(t) { return t.ytId !== vid; });
+    saveCloudTracks();
+    tracks = myMusic.concat(savedTracks);
+    filterTracks(currentPl, document.getElementById('pl-title').innerText);
+}
 
+function exportData() {
+    var str = JSON.stringify(savedTracks);
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(str);
+        alert('Код скопирован! Отправь его себе в Избранное и вставь на другом устройстве.');
+    } else {
+        prompt('Скопируй этот код вручную:', str);
+    }
+}
+
+function importData() {
+    var str = prompt('Вставь скопированный код списка видео:');
+    if (!str) return;
+    try {
+        var parsed = JSON.parse(str);
+        if (Array.isArray(parsed)) {
+            savedTracks = parsed;
+            saveCloudTracks();
+            tracks = myMusic.concat(savedTracks);
+            filterTracks(currentPl, document.getElementById('pl-title').innerText);
+            closeSettings();
+            alert('Готово! Перенесено видео: ' + savedTracks.length);
+        }
+    } catch(e) { alert('Ошибка: неверный формат кода.'); }
+}
+
+init();
