@@ -83,27 +83,19 @@ function renderTracks() {
 function play(i) {
     idx = i;
     var t = currentList[idx];
-    if (!t) return;
-    var cov = t.cover ? t.cover : defaultCover;
-    var titleClean = cleanName(t.title);
-    document.getElementById('mini-cover').src = cov;
-    document.getElementById('big-cover').src = cov;
-    document.getElementById('now-playing').innerText = titleClean;
-    document.getElementById('big-title').innerText = titleClean;
-    document.getElementById('big-artist').innerText = t.artist || '';
-    if (t.type === 'yt') {
-    audio.pause(); audio.src = '';
-    ytBox.style.display = 'block';
-    var ids = t.ytId.split('_');
-    ytFrame.src = vkPrefix + ids.shift() + '&id=' + ids.shift() + '&hd=2&autoplay=1';
-    syncBtns('📺');
-}
-
+    
+if (t.type === 'yt') {
+        audio.pause(); audio.src = '';
+        ytBox.style.display = 'block';
+        var ids = t.ytId.split('_');
+        ytFrame.src = vkPrefix + ids.shift() + '&id=' + ids.shift() + '&hd=2&autoplay=1';
+        syncBtns('📺');
     } else {
         ytBox.style.display = 'none'; ytFrame.src = '';
         audio.src = t.url;
         audio.play();
         syncBtns('⏸');
+
     }
     renderTracks();
 }
