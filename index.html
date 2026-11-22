@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TG Music Player</title>
+    <style>
+        body { background: #121212; color: #fff; font-family: sans-serif; padding: 16px; margin: 0; }
+        .row { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 16px; }
+        .card { min-width: 120px; cursor: pointer; }
+        .cover { width: 120px; height: 120px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+        .track { display: flex; align-items: center; padding: 10px; border-radius: 8px; cursor: pointer; background: #1e1e1e; margin-bottom: 8px; }
+        .track.active { border: 1px solid #1db954; color: #1db954; }
+        .bar { position: fixed; bottom: 10px; left: 10px; right: 10px; background: #282828; padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
+        button { background: #1db954; border: none; padding: 8px 14px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>Моя медиатека</h2>
+    <div class="row" id="playlists"></div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h3 id="pl-title" style="margin:0;">Все треки</h3>
+        <button onclick="shufflePlay()">🔀 Перемешать</button>
+    </div>
+    <div id="tracks"></div>
+    <div class="bar">
+        <span id="now-playing">Выбери трек</span>
+        <div>
+            <button onclick="togglePlay()" id="play-btn">▶</button>
+            <button onclick="nextTrack()">⏭</button>
+        </div>
+    </div>
+    <audio id="audio"></audio>
+    <script src="app.js"></script>
+</body>
+</html>
