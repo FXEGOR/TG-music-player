@@ -7,9 +7,9 @@ var playlists = [
 
 var defaultCover = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzI4MjgyOCIvPjx0ZXh0IHg9IjUwIiB5PSI2NSIgZm9udC1zaXplPSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+8J+OtTwvdGV4dD48L3N2Zz4=';
 var vkPrefix = atob('aHR0cHM6Ly92ay5jb20vdmlkZW9fZXh0LnBocD9vaWQ9');
-var savedTracks = JSON.parse(localStorage.getItem('my_tg_tracks') || '[]');
+var savedTracks = [];
 var myMusic = (typeof customMusic !== 'undefined') ? customMusic : [];
-var tracks = myMusic.concat(savedTracks);
+var tracks = myMusic.slice();
 
 var currentPl = 'all';
 var currentList = tracks.slice();
@@ -24,7 +24,35 @@ function cleanName(name) {
     return str.replace(/\.(mp3|m4a|ogg|wav)$/i, '').replace(/,\s*$/, '');
 }
 
+function loadCloudTracks(callback) {
+    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.CloudStorage) {
+        Telegram.WebApp.CloudStorage.getItem('my_tg_tracks', function(err, val) {
+            if (!err && val) {
+                try { savedTracks = JSON.parse(val); } catch(e) { savedTracks = []; }
+            } else {
+                savedTracks = JSON.parse(localStorage.getItem('my_tg_tracks') || '[]');
+            }
+            callback();
+        });
+    } else {
+        savedTracks = JSON.parse(localStorage.getItem('my_tg_tracks') || '[]');
+        callback();
+    }
+}
+
+function saveCloudTracks() {
+    var dataStr = JSON.stringify(savedTracks);
+    localStorage.setItem('my_tg_tracks', dataStr);
+    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.CloudStorage) {
+        Telegram.WebApp.CloudStorage.setItem('my_tg_tracks', dataStr);
+    }
+}
+
 function init() {
+    if (window.Telegram && Telegram.WebApp) {
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
+    }
     var savedTheme = localStorage.getItem('fx_theme') || 'default';
     setTheme(savedTheme);
     document.getElementById('mini-cover').src = defaultCover;
@@ -37,9 +65,12 @@ function init() {
         d.onclick = function() { filterTracks(p.id, p.name); };
         plBox.appendChild(d);
     });
-    renderTracks();
+    loadCloudTracks(function() {
+        tracks = myMusic.concat(savedTracks);
+        currentList = tracks.slice();
+        renderTracks();
+    });
 }
-
 function filterTracks(id, name) {
     currentPl = id;
     document.getElementById('pl-title').innerText = name;
@@ -80,6 +111,7 @@ function renderTracks() {
         tBox.appendChild(d);
     });
 }
+
 function play(i) {
     idx = i;
     var t = currentList[idx];
@@ -198,7 +230,7 @@ function saveYtVideo() {
     var videoId = match ? match.pop() : null;
     if (!videoId) { alert('Не удалось распознать ссылку! Нужна ссылка вида ://vk.com'); return; }
     savedTracks.push({ type: 'yt', title: title, artist: 'ВК Видео', pl: 'youtube', ytId: videoId, custom: true });
-    localStorage.setItem('my_tg_tracks', JSON.stringify(savedTracks));
+    saveCloudTracks();
     tracks = myMusic.concat(savedTracks);
     document.getElementById('yt-url-input').value = '';
     document.getElementById('yt-title-input').value = '';
@@ -207,3 +239,4 @@ function saveYtVideo() {
 }
 
 init();
+
