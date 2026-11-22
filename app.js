@@ -5,7 +5,7 @@ var playlists = [
     { id: 'youtube', name: 'YouTube Видео', icon: '📺', bg: '#ff0000' }
 ];
 
-var defaultCover = 'data:image/svg+xml;utf8,<svg xmlns="http://w3.org" width="100" height="100"><rect width="100" height="100" fill="%23282828"/><text x="50" y="60" font-size="40" text-anchor="middle">🎵</text></svg>';
+var defaultCover = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzI4MjgyOCIvPjx0ZXh0IHg9IjUwIiB5PSI2NSIgZm9udC1zaXplPSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+8J+OtTwvdGV4dD48L3N2Zz4=';
 var ytPrefix = atob('aHR0cHM6Ly93d3cueW91dHViZS5jb20vZW1iZWQv');
 var savedTracks = JSON.parse(localStorage.getItem('my_tg_tracks') || '[]');
 var myMusic = (typeof customMusic !== 'undefined') ? customMusic : [];
@@ -14,7 +14,7 @@ var tracks = myMusic.concat(savedTracks);
 var currentPl = 'all';
 var currentList = tracks.slice();
 var idx = 0;
-var repeatMode = 0; // 0 - выкл, 1 - повтор списка, 2 - повтор 1 трека
+var repeatMode = 0;
 var audio = document.getElementById('audio');
 var ytBox = document.getElementById('yt-container');
 var ytFrame = document.getElementById('yt-frame');
@@ -141,7 +141,6 @@ function prevTrack() {
     else play((idx - 1 + currentList.length) % currentList.length);
 }
 
-// Настоящая перемешка очереди (Алгоритм Фишера — Йетса)
 function shuffleQueue() {
     if (!currentList.length) return;
     var currentTrack = audio.src ? currentList[idx] : null;
@@ -233,7 +232,7 @@ function closeModal() { document.getElementById('add-modal').style.display = 'no
 function extractYtId(url) {
     var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
     var match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
+    return (match && match.length === 11) ? match : null;
 }
 
 function saveYtVideo() {
