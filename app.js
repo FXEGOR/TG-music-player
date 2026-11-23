@@ -64,11 +64,36 @@ function init() {
     });
 }
 
+var noteFilter = 'all';
+var statusMap = {
+    plan: { label: '📋 В планах', color: '#888' },
+    listen: { label: '🎧 Слушаю', color: '#3b82f6' },
+    done: { label: '✅ Прослушано', color: '#10b981' },
+    fav: { label: '⭐ Любимое', color: '#f59e0b' },
+    drop: { label: '🗑 Брошено', color: '#ef4444' }
+};
+
+function setNoteFilter(st) {
+    noteFilter = st;
+    filterTracks('notes', 'Артисты и заметки');
+}
+
 function filterTracks(id, name) {
     currentPl = id;
     document.getElementById('pl-title').innerText = name;
     document.getElementById('search-input').value = '';
-    currentList = (id === 'all') ? tracks.filter(function(t) { return t.type !== 'note'; }) : tracks.filter(function(t) { return t.pl === id; });
+    document.getElementById('note-filters').style.display = (id === 'notes') ? 'flex' : 'none';
+    if (id === 'all') {
+        currentList = tracks.filter(function(t) { return t.type !== 'note'; });
+    } else if (id === 'notes') {
+        currentList = tracks.filter(function(t) {
+            if (t.type !== 'note') return false;
+            var st = t.status || (t.done ? 'done' : 'plan');
+            return noteFilter === 'all' || st === noteFilter;
+        });
+    } else {
+        currentList = tracks.filter(function(t) { return t.pl === id; });
+    }
     renderTracks();
 }
 
@@ -87,33 +112,38 @@ function renderTracks() {
     currentList.forEach(function(t, i) {
         var d = document.createElement('div');
         if (t.type === 'note') {
+            var stKey = t.status || (t.done ? 'done' : 'plan');
+            var stObj = statusMap[stKey] || statusMap.plan;
             d.className = 'track';
-            d.style.opacity = t.done ? '0.5' : '1';
-            var check = document.createElement('button');
-            check.innerText = t.done ? '✅' : '⬜';
-            check.style.cssText = 'background:none; border:none; font-size:18px; cursor:pointer; padding:0;';
-            check.onclick = function(e) { e.stopPropagation(); toggleNoteDone(t.id); };
-            d.appendChild(check);
+            d.style.borderLeft = '4px solid ' + stObj.color;
 
             var info = document.createElement('div');
             info.style.cssText = 'flex:1; min-width:0;';
-            var tDiv = document.createElement('div');
-            tDiv.style.cssText = 'font-weight:bold; font-size:14px;' + (t.done ? 'text-decoration:line-through;' : '');
-            tDiv.textContent = cleanName(t.title);
-            var aDiv = document.createElement('div');
-            aDiv.style.cssText = 'font-size:12px; color:var(--text-sub); margin-top:2px;';
-            aDiv.textContent = t.artist || '';
-            info.appendChild(tDiv);
-            info.appendChild(aDiv);
+            var topLine = document.createElement('div');
+            topLine.style.cssText = 'font-weight:bold; font-size:14px; margin-bottom:4px;';
+            topLine.textContent = cleanName(t.title) + (t.score ? '  ★ ' + t.score + '/10' : '');
+            
+            var subLine = document.createElement('div');
+            subLine.style.cssText = 'font-size:12px; color:var(--text-sub);';
+            subLine.textContent = stObj.label + (t.artist ? ' • ' + t.artist : '');
+            
+            info.appendChild(topLine);
+            info.appendChild(subLine);
             d.appendChild(info);
 
             if (t.url) {
                 var linkBtn = document.createElement('a');
                 linkBtn.href = t.url; linkBtn.target = '_blank'; linkBtn.innerText = '🔗';
-                linkBtn.style.cssText = 'text-decoration:none; font-size:18px; padding:4px;';
+                linkBtn.style.cssText = 'text-decoration:none; font-size:17px; padding:4px;';
                 linkBtn.onclick = function(e) { e.stopPropagation(); };
                 d.appendChild(linkBtn);
             }
+            var editBtn = document.createElement('button');
+            editBtn.innerText = '✏️';
+            editBtn.style.cssText = 'background:none; border:none; font-size:15px; padding:4px; cursor:pointer;';
+            editBtn.onclick = function(e) { e.stopPropagation(); editNote(t.id); };
+            d.appendChild(editBtn);
+
             var delN = document.createElement('button');
             delN.innerText = '✖';
             delN.style.cssText = 'background:none; border:none; color:#777; font-size:15px; padding:4px; cursor:pointer;';
@@ -200,53 +230,53 @@ function openFull() { document.getElementById('full-screen').classList.add('open
 function closeFull() { document.getElementById('full-screen').classList.remove('open'); }
 function openModal() { document.getElementById('add-modal').style.display = 'flex'; }
 function closeModal() { document.getElementById('add-modal').style.display = 'none'; }
-function openNoteModal() { document.getElementById('note-modal').style.display = 'flex'; }
+function openNoteModal() {
+    document.getElementById('note-modal-title').innerText = 'Новая карточка';
+    document.getElementById('note-edit-id').value = '';
+    document.getElementById('note-name').value = '';
+    document.getElementById('note-status').value = 'plan';
+    document.getElementById('note-score').value = '';
+    document.getElementById('note-tag').value = '';
+    document.getElementById('note-link').value = '';
+    document.getElementById('note-modal').style.display = 'flex';
+}
 function closeNoteModal() { document.getElementById('note-modal').style.display = 'none'; }
 
-function saveYtVideo() {
-    var url = document.getElementById('yt-url-input').value.trim(), title = document.getElementById('yt-title-input').value.trim() || 'ВК Видео';
-    var match = url.match(/video(-?\d+_\d+)/), videoId = match ? match.pop() : null;
-    if (!videoId) { alert('Не удалось распознать ссылку!'); return; }
-    savedTracks.push({ type: 'yt', title: title, artist: 'ВК Видео', pl: 'youtube', ytId: videoId, custom: true });
-    saveCloudTracks(); tracks = myMusic.concat(savedTracks);
-    document.getElementById('yt-url-input').value = ''; document.getElementById('yt-title-input').value = '';
-    closeModal(); filterTracks(currentPl, document.getElementById('pl-title').innerText);
+function editNote(id) {
+    var item = savedTracks.find(function(t) { return t.id === id; });
+    if (!item) return;
+    document.getElementById('note-modal-title').innerText = 'Редактировать карточку';
+    document.getElementById('note-edit-id').value = item.id;
+    document.getElementById('note-name').value = item.title || '';
+    document.getElementById('note-status').value = item.status || (item.done ? 'done' : 'plan');
+    document.getElementById('note-score').value = item.score || '';
+    document.getElementById('note-tag').value = item.artist || '';
+    document.getElementById('note-link').value = item.url || '';
+    document.getElementById('note-modal').style.display = 'flex';
 }
 
 function saveNote() {
-    var name = document.getElementById('note-name').value.trim(), tag = document.getElementById('note-tag').value.trim() || 'На будущее', link = document.getElementById('note-link').value.trim();
+    var editId = document.getElementById('note-edit-id').value;
+    var name = document.getElementById('note-name').value.trim();
+    var status = document.getElementById('note-status').value;
+    var score = document.getElementById('note-score').value;
+    var tag = document.getElementById('note-tag').value.trim();
+    var link = document.getElementById('note-link').value.trim();
     if (!name) { alert('Введи имя артиста или название!'); return; }
-    savedTracks.unshift({ id: Date.now(), type: 'note', title: name, artist: tag, pl: 'notes', url: link, done: false });
+
+    if (editId) {
+        savedTracks.forEach(function(t) {
+            if (String(t.id) === String(editId)) {
+                t.title = name; t.status = status; t.score = score; t.artist = tag; t.url = link;
+            }
+        });
+    } else {
+        savedTracks.unshift({ id: Date.now(), type: 'note', title: name, status: status, score: score, artist: tag, pl: 'notes', url: link });
+    }
     saveCloudTracks(); tracks = myMusic.concat(savedTracks);
-    document.getElementById('note-name').value = ''; document.getElementById('note-tag').value = ''; document.getElementById('note-link').value = '';
     closeNoteModal(); filterTracks('notes', 'Артисты и заметки');
 }
 
-function toggleNoteDone(id) { savedTracks.forEach(function(t) { if (t.id === id) t.done = !t.done; }); saveCloudTracks(); tracks = myMusic.concat(savedTracks); filterTracks(currentPl, document.getElementById('pl-title').innerText); }
-function deleteNote(id) { savedTracks = savedTracks.filter(function(t) { return t.id !== id; }); saveCloudTracks(); tracks = myMusic.concat(savedTracks); filterTracks(currentPl, document.getElementById('pl-title').innerText); }
-function deleteVideo(vid) { savedTracks = savedTracks.filter(function(t) { return t.ytId !== vid; }); saveCloudTracks(); tracks = myMusic.concat(savedTracks); filterTracks(currentPl, document.getElementById('pl-title').innerText); }
-
-function exportData() {
-    var str = JSON.stringify(savedTracks);
-    if (navigator.clipboard) { navigator.clipboard.writeText(str); alert('Код скопирован! Отправь его себе в Избранное.'); }
-    else { prompt('Скопируй этот код:', str); }
-}
-
-function importData() {
-    var str = prompt('Вставь скопированный код:');
-    if (!str) return;
-    try {
-        var parsed = JSON.parse(str), added = 0;
-        if (Array.isArray(parsed)) {
-            parsed.forEach(function(item) {
-                var exists = savedTracks.some(function(ex) { return (item.type === 'yt' && ex.ytId === item.ytId) || (item.type === 'note' && (ex.id === item.id || (ex.title === item.title && ex.url === item.url))); });
-                if (!exists) { savedTracks.unshift(item); added++; }
-            });
-            saveCloudTracks(); tracks = myMusic.concat(savedTracks); filterTracks(currentPl, document.getElementById('pl-title').innerText); closeSettings();
-            alert('Синхронизация завершена! Новых записей: ' + added);
-        }
-    } catch(e) { alert('Ошибка: неверный формат кода.'); }
-}
-
 init();
+
 
