@@ -88,6 +88,16 @@
         <h3 id="pl-title" style="margin:0;">Все треки</h3>
         <button class="btn-accent" onclick="shuffleQueue()">🔀 Перемешать</button>
     </div>
+
+    <div id="note-filters" style="display:none; gap:6px; overflow-x:auto; padding-bottom:12px;">
+        <button class="btn-dark" onclick="setNoteFilter('all')">Все</button>
+        <button class="btn-dark" onclick="setNoteFilter('plan')">📋 В планах</button>
+        <button class="btn-dark" onclick="setNoteFilter('listen')">🎧 Слушаю</button>
+        <button class="btn-dark" onclick="setNoteFilter('fav')">⭐ Любимое</button>
+        <button class="btn-dark" onclick="setNoteFilter('done')">✅ Прослушано</button>
+        <button class="btn-dark" onclick="setNoteFilter('drop')">🗑 Брошено</button>
+    </div>
+
     <div id="tracks"></div>
 
     <!-- Мини-плеер -->
@@ -180,18 +190,41 @@
         </div>
     </div>
         
-<div class="modal" id="note-modal">
-    <div class="modal-card">
-        <h3 style="margin-top:0;">Новая карточка / Заметка</h3>
-        <input type="text" id="note-name" placeholder="Артист или название трека...">
-        <input type="text" id="note-tag" placeholder="Жанр или пометка (например: на будущее, мейдкор)">
-        <input type="text" id="note-link" placeholder="Ссылка на ВК, ТГ или YouTube (необязательно)">
-        <div style="display:flex; gap:10px; justify-content:flex-end;">
-            <button class="btn-dark" onclick="closeNoteModal()">Отмена</button>
-            <button class="btn-accent" onclick="saveNote()">Сохранить</button>
+    <div class="modal" id="note-modal">
+        <div class="modal-card">
+            <h3 id="note-modal-title" style="margin-top:0;">Новая карточка</h3>
+            <input type="hidden" id="note-edit-id">
+            <input type="text" id="note-name" placeholder="Артист, альбом или трек...">
+            <div style="display:flex; gap:8px; margin-bottom:10px;">
+                <select id="note-status" style="flex:2; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-body); color:var(--text-main);">
+                    <option value="plan">📋 В планах</option>
+                    <option value="listen">🎧 Слушаю</option>
+                    <option value="done">✅ Прослушано</option>
+                    <option value="fav">⭐ Любимое</option>
+                    <option value="drop">🗑 Брошено</option>
+                </select>
+                <select id="note-score" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-body); color:var(--text-main);">
+                    <option value="">Без оценки</option>
+                    <option value="10">★ 10</option>
+                    <option value="9">★ 9</option>
+                    <option value="8">★ 8</option>
+                    <option value="7">★ 7</option>
+                    <option value="6">★ 6</option>
+                    <option value="5">★ 5</option>
+                    <option value="4">★ 4</option>
+                    <option value="3">★ 3</option>
+                    <option value="2">★ 2</option>
+                    <option value="1">★ 1</option>
+                </select>
+            </div>
+            <input type="text" id="note-tag" placeholder="Жанр или тег (пост-панк, мейдкор, эмбиент...)">
+            <input type="text" id="note-link" placeholder="Ссылка на ВК, ТГ или YouTube (необязательно)">
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button class="btn-dark" onclick="closeNoteModal()">Отмена</button>
+                <button class="btn-accent" onclick="saveNote()">Сохранить</button>
+            </div>
         </div>
     </div>
-</div>
 
     <div id="err-box" style="display:none; background:#600; color:#fff; padding:10px; border-radius:8px; margin:12px 0; font-size:12px;"></div>
     <script>
@@ -222,9 +255,10 @@
     </script>
     <audio id="audio"></audio>
     <script src="tracks.js"></script>
-    <script src="app.js?v=20"></script>
+    <script src="app.js?v=21"></script>
 </body>
 </html>
+
 
 
 
