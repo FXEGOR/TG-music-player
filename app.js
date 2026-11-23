@@ -139,6 +139,7 @@ function renderTracks() {
         d.className = 'track' + (isCurrent ? ' active' : '');
         var img = document.createElement('img');
         img.className = 't-img';
+        img.loading = 'lazy';
         img.src = t.cover ? t.cover : defaultCover;
         d.appendChild(img);
         var titleSpan = document.createElement('span');
@@ -330,23 +331,41 @@ function exportData() {
         prompt('Скопируй этот код вручную:', str);
     }
 }
-
 function importData() {
     var str = prompt('Вставь скопированный код списка:');
     if (!str) return;
     try {
         var parsed = JSON.parse(str);
         if (Array.isArray(parsed)) {
-            savedTracks = parsed;
+            var addedCount = 0;
+            parsed.forEach(function(item) {
+                var exists = savedTracks.some(function(existing) {
+                    if (item.type === 'yt' && existing.type === 'yt') {
+                        return existing.ytId === item.ytId;
+                    }
+                    if (item.type === 'note' && existing.type === 'note') {
+                        return existing.id === item.id || (existing.title === item.title && existing.url === item.url);
+                    }
+                    return false;
+                });
+                if (!exists) {
+                    savedTracks.unshift(item);
+                    addedCount++;
+                }
+            });
             saveCloudTracks();
             tracks = myMusic.concat(savedTracks);
             filterTracks(currentPl, document.getElementById('pl-title').innerText);
             closeSettings();
-            alert('Готово! Перенесено записей: ' + savedTracks.length);
+            alert('Синхронизация завершена! Новых записей добавлено: ' + addedCount);
         }
     } catch(e) { alert('Ошибка: неверный формат кода.'); }
 }
 
+
+}
+
 init();
+
 
 
