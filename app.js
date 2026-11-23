@@ -331,6 +331,7 @@ function exportData() {
         prompt('Скопируй этот код вручную:', str);
     }
 }
+
 function importData() {
     var str = prompt('Вставь скопированный код списка:');
     if (!str) return;
@@ -362,10 +363,4 @@ function importData() {
     } catch(e) { alert('Ошибка: неверный формат кода.'); }
 }
 
-
-}
-
 init();
-
-
-
