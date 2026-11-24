@@ -185,3 +185,50 @@ function importData() {
 }
 
 init();
+function seekAudio(val) { if (audio.duration) audio.currentTime = (val / 100) * audio.duration; }
+function fmtTime(sec) { var m = Math.floor(sec / 60), s = Math.floor(sec % 60); return m + ':' + (s < 10 ? '0' : '') + s; }
+function setTheme(t) {
+    document.body.classList.toggle('amoled-theme', t === 'amoled');
+    localStorage.setItem('fx_theme', t);
+    document.getElementById('th-default').classList.toggle('active', t !== 'amoled');
+    document.getElementById('th-amoled').classList.toggle('active', t === 'amoled');
+}
+function setStartTab(tab) { localStorage.setItem('fx_start_tab', tab); updateStartButtons(tab); }
+function updateStartButtons(tab) { document.getElementById('st-media').classList.toggle('active', tab === 'media'); document.getElementById('st-notes').classList.toggle('active', tab === 'notes'); }
+function openFull() { document.getElementById('full-player').classList.add('open'); }
+function closeFull() { document.getElementById('full-player').classList.remove('open'); }
+function openVideoModal() { document.getElementById('video-modal').style.display = 'flex'; }
+function closeVideoModal() { document.getElementById('video-modal').style.display = 'none'; }
+function openNoteModal() {
+    document.getElementById('note-modal-title').innerText = 'Новая карточка';
+    document.getElementById('note-edit-id').value = ''; document.getElementById('note-name').value = '';
+    document.getElementById('note-status').value = 'plan'; document.getElementById('note-score').value = '';
+    document.getElementById('note-tag').value = ''; document.getElementById('note-link').value = '';
+    document.getElementById('note-modal').style.display = 'flex';
+}
+function closeNoteModal() { document.getElementById('note-modal').style.display = 'none'; }
+init();
+
+function seekAudio(val) { if (audio.duration) audio.currentTime = (val / 100) * audio.duration; }
+function fmtTime(sec) { var m = Math.floor(sec / 60), s = Math.floor(sec % 60); return m + ':' + (s < 10 ? '0' : '') + s; }
+function setTheme(t) {
+    document.body.classList.toggle('amoled-theme', t === 'amoled');
+    localStorage.setItem('fx_theme', t);
+    document.getElementById('th-default').classList.toggle('active', t !== 'amoled');
+    document.getElementById('th-amoled').classList.toggle('active', t === 'amoled');
+}
+function setStartTab(tab) { localStorage.setItem('fx_start_tab', tab); updateStartButtons(tab); }
+function updateStartButtons(tab) { document.getElementById('st-media').classList.toggle('active', tab === 'media'); document.getElementById('st-notes').classList.toggle('active', tab === 'notes'); }
+function openFull() { document.getElementById('full-player').classList.add('open'); }
+function closeFull() { document.getElementById('full-player').classList.remove('open'); }
+function openVideoModal() { document.getElementById('video-modal').style.display = 'flex'; }
+function closeVideoModal() { document.getElementById('video-modal').style.display = 'none'; }
+function openNoteModal() {
+    document.getElementById('note-modal-title').innerText = 'Новая карточка';
+    document.getElementById('note-edit-id').value = ''; document.getElementById('note-name').value = '';
+    document.getElementById('note-status').value = 'plan'; document.getElementById('note-score').value = '';
+    document.getElementById('note-tag').value = ''; document.getElementById('note-link').value = '';
+    document.getElementById('note-modal').style.display = 'flex';
+}
+function closeNoteModal() { document.getElementById('note-modal').style.display = 'none'; }
+init();
