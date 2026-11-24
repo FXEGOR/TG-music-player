@@ -245,3 +245,16 @@ function renderNotesList() {
     // логика отрисовки заметок и управления плеером
 }
 init();
+
+function selectMediaSection(id, name) {
+    currentPl = id;
+    document.getElementById('media-sub-title').innerText = name;
+    currentList = (id === 'all') ? tracks.filter(function(t) { return t.type !== 'note'; }) : tracks.filter(function(t) { return t.pl === id; });
+    renderMediaList();
+}
+// (функции рендеринга списка, фильтрации и управления заметками)
+
+function renderNotesList() {
+    // логика отрисовки заметок и управления плеером
+}
+init();
