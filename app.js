@@ -232,3 +232,4 @@ function openNoteModal() {
 }
 function closeNoteModal() { document.getElementById('note-modal').style.display = 'none'; }
 init();
+......
