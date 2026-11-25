@@ -583,6 +583,35 @@ function importFile(e) {
     reader.readAsText(file);
 }
 
+
+function exportChunks() {
+    var total = savedTracks.length;
+    if (!total) { alert('Список пуст!'); return; }
+    var chunks = [], cur = [];
+    savedTracks.forEach(function(item) {
+        cur.push(item);
+        if (JSON.stringify(cur).length > 3200) {
+            cur.pop();
+            chunks.push(JSON.stringify(cur));
+            cur = [item];
+        }
+    });
+    if (cur.length) chunks.push(JSON.stringify(cur));
+
+    function copyNext(idx) {
+        if (idx >= chunks.length) { alert('Все части скопированы!'); return; }
+        navigator.clipboard.writeText(chunks[idx]).then(function() {
+            if (chunks.length === 1) {
+                alert('База скопирована целиком! Отправь её в Избранное.');
+            } else if (confirm('Часть ' + (idx + 1) + ' из ' + chunks.length + ' скопирована! Отправь её в Избранное, затем нажми ОК для следующей части.')) {
+                copyNext(idx + 1);
+            }
+        });
+    }
+    copyNext(0);
+}
+
 init();
+
 
 
