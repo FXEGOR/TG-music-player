@@ -613,13 +613,16 @@ function exportChunks() {
 
 
 
+
+
 var searchTimer = null;
+var apiBase = atob('aHR0cHM6Ly9pdHVuZXMuYXBwbGUuY29tL3NlYXJjaD90ZXJtPQ==');
 function searchCatalog(q) {
     clearTimeout(searchTimer);
     var box = document.getElementById('api-results');
     if (q.trim().length < 2) { box.style.display = 'none'; return; }
     searchTimer = setTimeout(function() {
-        var url = 'https://apple.com' + encodeURIComponent(q) + '&entity=album,musicArtist&limit=6&country=ru';
+        var url = apiBase + encodeURIComponent(q) + '&entity=album,musicArtist&limit=6&country=ru';
         fetch(url).then(function(r) { return r.json(); }).then(function(data) {
             box.innerHTML = '';
             if (!data.results || !data.results.length) { box.style.display = 'none'; return; }
