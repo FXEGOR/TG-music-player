@@ -554,5 +554,35 @@ function play(i) {
     renderMediaList();
 }
 
+
+function exportFile() {
+    var blob = new Blob([JSON.stringify(savedTracks, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'fxmusic_backup.json';
+    a.click();
+}
+
+function importFile(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+        try {
+            var parsed = JSON.parse(ev.target.result), added = 0;
+            if (Array.isArray(parsed)) {
+                parsed.forEach(function(item) {
+                    var exists = savedTracks.some(function(ex) { return (item.type === 'yt' && ex.ytId === item.ytId) || (item.type === 'note' && (ex.id === item.id || (ex.title === item.title && ex.url === item.url))); });
+                    if (!exists) { savedTracks.unshift(item); added++; }
+                });
+                saveCloudTracks(); tracks = myMusic.concat(savedTracks); renderCurrentTab();
+                alert('Готово! Добавлено новых записей: ' + added);
+            }
+        } catch(err) { alert('Ошибка чтения файла.'); }
+    };
+    reader.readAsText(file);
+}
+
 init();
+
 
