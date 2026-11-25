@@ -612,13 +612,39 @@ function exportChunks() {
 }
 
 
+
 var searchTimer = null;
 function searchCatalog(q) {
     clearTimeout(searchTimer);
     var box = document.getElementById('api-results');
-    if (q.trim().length ' : '') +
-                                '<div style="min-width:0; flex:1;"><div style="font-size:13px; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + title + '</div>' +
-                                '<div style="font-size:11px; color:var(--text-sub);">' + sub + '</div></div>';
+    if (q.trim().length < 2) { box.style.display = 'none'; return; }
+    searchTimer = setTimeout(function() {
+        var url = 'https://apple.com' + encodeURIComponent(q) + '&entity=album,musicArtist&limit=6&country=ru';
+        fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+            box.innerHTML = '';
+            if (!data.results || !data.results.length) { box.style.display = 'none'; return; }
+            box.style.display = 'block';
+            data.results.forEach(function(item) {
+                var row = document.createElement('div');
+                row.style.cssText = 'display:flex; align-items:center; gap:8px; padding:8px; border-bottom:1px solid var(--border); cursor:pointer;';
+                var title = item.collectionName || item.artistName;
+                var sub = item.collectionName ? (item.artistName + ' • ' + (item.primaryGenreName || '')) : (item.primaryGenreName || 'Исполнитель');
+                var cov = item.artworkUrl100 ? item.artworkUrl100.replace('100x100bb', '600x600bb') : '';
+                if (cov) {
+                    var im = document.createElement('img');
+                    im.src = item.artworkUrl100;
+                    im.style.cssText = 'width:36px; height:36px; border-radius:6px; object-fit:cover;';
+                    row.appendChild(im);
+                }
+                var inf = document.createElement('div');
+                inf.style.cssText = 'min-width:0; flex:1;';
+                var d1 = document.createElement('div');
+                d1.style.cssText = 'font-size:13px; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;';
+                d1.textContent = title;
+                var d2 = document.createElement('div');
+                d2.style.cssText = 'font-size:11px; color:var(--text-sub);';
+                d2.textContent = sub;
+                inf.appendChild(d1); inf.appendChild(d2); row.appendChild(inf);
                 row.onclick = function() {
                     document.getElementById('note-name').value = item.collectionName ? (item.artistName + ' - ' + item.collectionName) : item.artistName;
                     document.getElementById('note-tag').value = item.primaryGenreName || '';
@@ -635,7 +661,3 @@ function searchCatalog(q) {
 }
 
 init();
-
-
-
-
