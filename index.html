@@ -123,8 +123,8 @@
         <div class="set-group">
             <p class="set-title">Перенос базы (ПК ↔ Телефон)</p>
             <div class="seg-row">
-                <button class="seg-btn" onclick="exportData()">📤 Копировать код</button>
-                <button class="seg-btn" onclick="importData()">📥 Вставить код</button>
+                <button class="seg-btn" onclick="exportFile()">📤 Скачать файл</button>
+                <label class="seg-btn" style="margin:0;">📥 Загрузить файл<input type="file" accept=".json" style="display:none;" onchange="importFile(event)"></label>
             </div>
         </div>
         <div class="set-group" style="display:flex; justify-content:space-between; align-items:center;">
@@ -199,6 +199,6 @@
     <audio id="audio"></audio>
     <script src="https://vk.com"></script>
     <script src="tracks.js"></script>
-    <script src="app.js?v=201"></script>
+    <script src="app.js?v=202"></script>
 </body>
 </html>
