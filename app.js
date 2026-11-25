@@ -144,7 +144,7 @@ function saveNote() {
     if (editId) {
         savedTracks.forEach(function(t) { if (String(t.id) === String(editId)) { t.title = name; t.status = status; t.score = score; t.artist = tag; t.url = link; } });
     } else {
-        savedTracks.unshift({ id: Date.now(), type: 'note', title: name, status: status, score: score, artist: tag, pl: 'notes', url: link });
+        savedTracks.unshift({ id: Date.now(), type: 'note', title: name, status: status, score: score, artist: tag, pl: 'notes', url: link, cover: document.getElementById('note-cover').value });
     }
     saveCloudTracks(); tracks = myMusic.concat(savedTracks); closeNoteModal(); renderNotesList();
 }
@@ -611,7 +611,31 @@ function exportChunks() {
     copyNext(0);
 }
 
+
+var searchTimer = null;
+function searchCatalog(q) {
+    clearTimeout(searchTimer);
+    var box = document.getElementById('api-results');
+    if (q.trim().length ' : '') +
+                                '<div style="min-width:0; flex:1;"><div style="font-size:13px; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + title + '</div>' +
+                                '<div style="font-size:11px; color:var(--text-sub);">' + sub + '</div></div>';
+                row.onclick = function() {
+                    document.getElementById('note-name').value = item.collectionName ? (item.artistName + ' - ' + item.collectionName) : item.artistName;
+                    document.getElementById('note-tag').value = item.primaryGenreName || '';
+                    document.getElementById('note-cover').value = cov;
+                    if (item.collectionViewUrl || item.artistLinkUrl) {
+                        document.getElementById('note-link').value = item.collectionViewUrl || item.artistLinkUrl;
+                    }
+                    box.style.display = 'none';
+                };
+                box.appendChild(row);
+            });
+        }).catch(function() { box.style.display = 'none'; });
+    }, 400);
+}
+
 init();
+
 
 
 
