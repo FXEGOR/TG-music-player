@@ -33,7 +33,6 @@
         .track-item.active { border-color: var(--accent); }
         .items-list.grid-view .track-item { flex-direction: column; align-items: flex-start; justify-content: space-between; min-height: 110px; }
         .t-img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: #2a2a2a; flex-shrink: 0; }
-        .items-list.grid-view .note-cover { width: 100%; height: auto; aspect-ratio: 1 / 1; border-radius: 10px; }
         .set-group { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
         .set-title { font-size: 13px; color: var(--text-sub); margin: 0 0 10px; font-weight: 600; }
         .seg-row { display: flex; gap: 8px; }
@@ -199,20 +198,9 @@
         </div>
     </div>
 
-        <div class="modal" id="confirm-modal">
-        <div class="modal-card">
-            <h3 style="margin-top:0;">FXMusic player</h3>
-            <p id="confirm-text" style="color:var(--text-main); font-size:14px; margin-bottom:18px;"></p>
-            <div style="display:flex; gap:10px; justify-content:flex-end;">
-                <button class="btn-dark" onclick="closeConfirmModal()">Отмена</button>
-                <button class="btn-accent" id="confirm-ok-btn" style="background:#ef4444; color:#fff;">Удалить</button>
-            </div>
-        </div>
-    </div>
-
     <audio id="audio"></audio>
     <script src="https://vk.com"></script>
     <script src="tracks.js"></script>
-    <script src="app.js?v=213"></script>
+    <script src="app.js?v=204"></script>
 </body>
 </html>
