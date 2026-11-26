@@ -102,9 +102,7 @@
     </div>
     <div id="err-box" style="display:none; background:#600; color:#fff; padding:10px; border-radius:10px; margin-bottom:12px; font-size:12px;"></div>
     <script>window.onerror = function(m, u, l) { if (m === 'Script error.' && l === 0) return; var b = document.getElementById('err-box'); b.style.display = 'block'; b.innerText = 'Ошибка: ' + m + ' (строка ' + l + ')'; };</script>
-
-    <div id="tab-media">
-            <!-- НОВЫЙ ГЛАВНЫЙ ЭКРАН -->
+ <!-- Главная -->
     <div id="tab-home">
         <!-- Секция: Новые релизы -->
         <div class="home-section">
@@ -138,7 +136,11 @@
             </div>
             <div id="home-playlists" class="items-list"></div>
         </div>
-    </div>
+    </div> 
+
+    
+    <!-- Медиа (ваш старый блок) -->
+    <div id="tab-media">
         <div class="vmp-grid" id="vmp-playlists"></div>
         <div class="yt-box" id="yt-container"><iframe id="yt-frame" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -147,7 +149,8 @@
         </div>
         <div class="items-list" id="media-list"></div>
     </div>
-
+    
+    <!-- Заметки -->
     <div id="tab-notes" style="display:none;">
         <div class="pills-bar">
             <div class="pills-scroll" id="note-pills">
@@ -200,12 +203,10 @@
         <button class="icon-btn" onclick="nextTrack()">⏭</button>
     </div>
 
-        <div class="tab-bar">
-        <!-- НОВАЯ ВКЛАДКА -->
-        <button class="tab-item active" id="nav-home" onclick="switchTab('home')"><span class="tab-icon">🏠</span><span>Главная</span></button>
-        
+           <div class="tab-bar">
+        <button class="tab-item" id="nav-home" onclick="switchTab('home')"><span class="tab-icon">🏠</span><span>Главная</span></button>
         <button class="tab-item" id="nav-notes" onclick="switchTab('notes')"><span class="tab-icon">📝</span><span>Заметки</span></button>
-        <button class="tab-item" id="nav-media" onclick="switchTab('media')"><span class="tab-icon">▶️</span><span>Медиа</span></button>
+        <button class="tab-item active" id="nav-media" onclick="switchTab('media')"><span class="tab-icon">▶️</span><span>Медиа</span></button>
         <button class="tab-item" id="nav-settings" onclick="switchTab('settings')"><span class="tab-icon">⚙️</span><span>Настройки</span></button>
     </div>
 
