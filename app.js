@@ -159,8 +159,17 @@ function saveYtVideo() {
     closeVideoModal(); selectMediaSection(currentPl, document.getElementById('media-sub-title').innerText);
 }
 
-function deleteNote(id) { savedTracks = savedTracks.filter(function(t) { return String(t.id) !== String(id); }); saveCloudTracks(); tracks = myMusic.concat(savedTracks); renderNotesList(); }
-function deleteVideo(vid) { savedTracks = savedTracks.filter(function(t) { return t.ytId !== vid; }); saveCloudTracks(); tracks = myMusic.concat(savedTracks); selectMediaSection(currentPl, document.getElementById('media-sub-title').innerText); }
+function deleteNote(id) {
+    var item = savedTracks.find(function(t) { return String(t.id) === String(id); });
+    var title = item ? cleanName(item.title) : 'эту заметку';
+    
+    if (!confirm('Точно удалить «' + title + '»?')) return;
+
+    savedTracks = savedTracks.filter(function(t) { return String(t.id) !== String(id); });
+    saveCloudTracks();
+    tracks = myMusic.concat(savedTracks);
+    renderNotesList();
+}
 
 function exportData() {
     var str = JSON.stringify(savedTracks);
