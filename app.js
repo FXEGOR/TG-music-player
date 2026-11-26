@@ -159,25 +159,24 @@ function saveYtVideo() {
     closeVideoModal(); selectMediaSection(currentPl, document.getElementById('media-sub-title').innerText);
 }
 
+function closeConfirmModal() {
+    document.getElementById('confirm-modal').style.display = 'none';
+}
+
 function deleteNote(id) {
     var item = savedTracks.find(function(t) { return String(t.id) === String(id); });
     var title = item ? cleanName(item.title) : 'эту заметку';
-    var msg = 'Точно удалить «' + title + '»?';
 
-    function doDelete() {
+    document.getElementById('confirm-text').textContent = 'Точно удалить «' + title + '»?';
+    document.getElementById('confirm-modal').style.display = 'flex';
+
+    document.getElementById('confirm-ok-btn').onclick = function() {
         savedTracks = savedTracks.filter(function(t) { return String(t.id) !== String(id); });
         saveCloudTracks();
         tracks = myMusic.concat(savedTracks);
         renderNotesList();
-    }
-
-    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.showConfirm) {
-        Telegram.WebApp.showConfirm(msg, function(ok) {
-            if (ok) doDelete();
-        });
-    } else {
-        if (confirm(msg)) doDelete();
-    }
+        closeConfirmModal();
+    };
 
 }
 
