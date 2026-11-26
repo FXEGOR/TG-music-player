@@ -197,13 +197,14 @@
                 <button class="seg-btn" id="st-notes" onclick="setStartTab('notes')">📝 Заметки</button>
             </div>
         </div>
-        <div class="set-group">
-            <p class="set-title">Перенос базы (ПК ↔ Телефон)</p>
-            <div class="seg-row">
-                <button class="seg-btn" onclick="exportChunks()">📤 Копировать базу</button>
-                <button class="seg-btn" onclick="importData()">📥 Вставить часть</button>
-            </div>
-        </div>
+       <div class="set-group">
+    <p class="set-title">Облачная синхронизация</p>
+    <div class="seg-row">
+        <button class="seg-btn" onclick="syncToBot()" style="background:var(--bg-body); border-color:var(--accent); color:var(--accent);">📤 Сохранить в облако</button>
+        <button class="seg-btn" onclick="syncFromBot()">📥 Загрузить из облака</button>
+    </div>
+    <div id="sync-status" style="font-size:12px; color:var(--text-sub); margin-top:8px; text-align:center;"></div>
+</div>
         <div class="set-group" style="display:flex; justify-content:space-between; align-items:center;">
             <div><div style="font-size:14px; font-weight:600;">Обратная связь</div><div style="font-size:12px; color:var(--text-sub); margin-top:2px;">Автор проекта в Telegram</div></div>
             <a href="https://t.me" target="_blank" class="btn-accent" style="text-decoration:none;">@FXEGOR</a>
