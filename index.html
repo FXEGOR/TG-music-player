@@ -33,7 +33,8 @@
         .track-item.active { border-color: var(--accent); }
         .items-list.grid-view .track-item { flex-direction: column; align-items: flex-start; justify-content: space-between; min-height: 110px; }
         .t-img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: #2a2a2a; flex-shrink: 0; }
-                /* Стили для Главного экрана */
+        
+        /* Стили для Главного экрана */
         .home-section { margin-bottom: 24px; }
         .home-title { font-size: 16px; font-weight: 700; margin: 0 0 12px 0; }
         .home-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
@@ -42,20 +43,11 @@
         .home-card img { width: 100%; aspect-ratio: 1/1; border-radius: 8px; object-fit: cover; margin-bottom: 8px; }
         .home-card .h-title { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .home-card .h-sub { font-size: 10px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
         /* Стили для обложек в режиме сетки */
-.items-list.grid-view .note-cover-img {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1 / 1;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    object-fit: cover;
-}
-/* Убедимся, что в сетке карточка растягивается правильно */
-.items-list.grid-view .track-item {
-    padding: 10px;
-    box-sizing: border-box;
-}
+        .items-list.grid-view .note-cover-img { width: 100%; height: auto; aspect-ratio: 1 / 1; border-radius: 8px; margin-bottom: 8px; object-fit: cover; }
+        .items-list.grid-view .track-item { padding: 10px; box-sizing: border-box; }
+        
         .set-group { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
         .set-title { font-size: 13px; color: var(--text-sub); margin: 0 0 10px; font-weight: 600; }
         .seg-row { display: flex; gap: 8px; }
@@ -87,7 +79,8 @@
         .modal-card input, .modal-card select { width: 100%; padding: 10px 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-body); color: var(--text-main); font-size: 14px; }
         .btn-accent { background: var(--accent); color: #000; border: none; padding: 9px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 13px; }
         .btn-dark { background: var(--bg-body); color: var(--text-main); border: 1px solid var(--border); padding: 9px 14px; border-radius: 20px; cursor: pointer; font-size: 13px; }
-            /* Стили для карточки профиля */
+        
+        /* Стили для карточки профиля */
         .profile-card { display: flex; align-items: center; gap: 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
         .profile-avatar { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; background: #333; flex-shrink: 0; }
         .profile-info { flex: 1; min-width: 0; }
@@ -97,8 +90,8 @@
 </head>
 <body>
     <div class="header">
-        <h2 id="page-title">Медиа</h2>
-        <div class="header-actions" id="header-btns">
+        <h2 id="page-title">Главная</h2>
+        <div class="header-actions" id="header-btns" style="display:none;">
             <button class="h-btn accent" onclick="onAddClick()">＋</button>
             <button class="h-btn" onclick="toggleSearch()">🔍</button>
         </div>
@@ -108,33 +101,25 @@
     </div>
     <div id="err-box" style="display:none; background:#600; color:#fff; padding:10px; border-radius:10px; margin-bottom:12px; font-size:12px;"></div>
     <script>window.onerror = function(m, u, l) { if (m === 'Script error.' && l === 0) return; var b = document.getElementById('err-box'); b.style.display = 'block'; b.innerText = 'Ошибка: ' + m + ' (строка ' + l + ')'; };</script>
- <!-- Главная -->
+
+    <!-- ГЛАВНАЯ -->
     <div id="tab-home">
-        <!-- Секция: Новые релизы -->
         <div class="home-section">
             <h3 class="home-title">Новые релизы</h3>
             <div class="home-scroll" id="home-new-releases"></div>
         </div>
-
-        <!-- Секция: Топ артистов -->
         <div class="home-section">
             <h3 class="home-title">Глобальный топ артистов</h3>
             <div class="home-scroll" id="home-top-artists"></div>
         </div>
-
-        <!-- Секция: Топ альбомов -->
         <div class="home-section">
             <h3 class="home-title">Топ альбомов</h3>
             <div class="home-scroll" id="home-top-albums"></div>
         </div>
-
-        <!-- Секция: Вам может понравиться -->
         <div class="home-section">
             <h3 class="home-title">Вам может понравиться</h3>
             <div class="home-scroll" id="home-recommended"></div>
         </div>
-
-        <!-- Секция: Мои плейлисты -->
         <div class="home-section">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <h3 class="home-title" style="margin:0;">Мои плейлисты</h3>
@@ -142,11 +127,10 @@
             </div>
             <div id="home-playlists" class="items-list"></div>
         </div>
-    </div> 
+    </div>
 
-    
-    <!-- Медиа (ваш старый блок) -->
-    <div id="tab-media">
+    <!-- МЕДИА -->
+    <div id="tab-media" style="display:none;">
         <div class="vmp-grid" id="vmp-playlists"></div>
         <div class="yt-box" id="yt-container"><iframe id="yt-frame" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -155,8 +139,8 @@
         </div>
         <div class="items-list" id="media-list"></div>
     </div>
-    
-    <!-- Заметки -->
+
+    <!-- ЗАМЕТКИ -->
     <div id="tab-notes" style="display:none;">
         <div class="pills-bar">
             <div class="pills-scroll" id="note-pills">
@@ -172,10 +156,8 @@
         <div class="items-list" id="notes-list"></div>
     </div>
 
+    <!-- НАСТРОЙКИ -->
     <div id="tab-settings" style="display:none;">
-        
-        
-        <!-- НОВАЯ КАРТОЧКА ПРОФИЛЯ -->
         <div class="profile-card">
             <img id="prof-avatar" class="profile-avatar" src="" alt="Avatar">
             <div class="profile-info">
@@ -184,7 +166,6 @@
             </div>
         </div>
 
-        <!-- ПОДКЛЮЧЕНИЕ VK -->
         <div class="set-group">
             <p class="set-title">Подключение аккаунта VK</p>
             <div id="vk-auth-container"></div>
@@ -193,7 +174,6 @@
             <script type="text/javascript">
               if ('VKIDSDK' in window) {
                 const VKID = window.VKIDSDK;
-
                 VKID.Config.init({
                   app: 54924266,
                   redirectUrl: 'https://FXEGOR.pythonanywhere.com/api/vk_callback',
@@ -201,7 +181,6 @@
                   source: VKID.ConfigSource.LOWCODE,
                   scope: '',
                 });
-
                 const oAuth = new VKID.OAuthList();
                 oAuth.render({
                   container: document.getElementById('vk-auth-container'),
@@ -212,8 +191,6 @@
                 .on(VKID.OAuthListInternalEvents.LOGIN_SUCCESS, function (payload) {
                   const code = payload.code;
                   const deviceId = payload.device_id;
-                  
-                  // Отправляем код на твой Python-сервер для обмена на токен
                   fetch('https://FXEGOR.pythonanywhere.com/api/vk_callback', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
@@ -228,8 +205,6 @@
                 });
               }
             </script>
-        </div>
-            <!-- Код из VK сам отрисует кнопку внутри этого контейнера -->
         </div>
           
         <div class="set-group">
@@ -246,34 +221,36 @@
                 <button class="seg-btn" id="st-notes" onclick="setStartTab('notes')">📝 Заметки</button>
             </div>
         </div>
-       <div class="set-group">
-    <p class="set-title">Облачная синхронизация</p>
-    <div class="seg-row">
-        <button class="seg-btn" onclick="syncToBot()" style="background:var(--bg-body); border-color:var(--accent); color:var(--accent);">📤 Сохранить в облако</button>
-        <button class="seg-btn" onclick="syncFromBot()">📥 Загрузить из облака</button>
-    </div>
-    <div id="sync-status" style="font-size:12px; color:var(--text-sub); margin-top:8px; text-align:center;"></div>
-</div>
+        <div class="set-group">
+            <p class="set-title">Облачная синхронизация</p>
+            <div class="seg-row">
+                <button class="seg-btn" onclick="syncToBot()" style="background:var(--bg-body); border-color:var(--accent); color:var(--accent);">📤 Сохранить в облако</button>
+                <button class="seg-btn" onclick="syncFromBot()">📥 Загрузить из облака</button>
+            </div>
+            <div id="sync-status" style="font-size:12px; color:var(--text-sub); margin-top:8px; text-align:center;"></div>
+        </div>
         <div class="set-group" style="display:flex; justify-content:space-between; align-items:center;">
             <div><div style="font-size:14px; font-weight:600;">Обратная связь</div><div style="font-size:12px; color:var(--text-sub); margin-top:2px;">Автор проекта в Telegram</div></div>
-            <a href="https://t.me" target="_blank" class="btn-accent" style="text-decoration:none;">@FXEGOR</a>
+            <a href="https://t.me/FXEGOR" target="_blank" class="btn-accent" style="text-decoration:none;">@FXEGOR</a>
         </div>
-        <div style="text-align:center; color:var(--text-sub); font-size:12px; margin-top:16px;">Версия интерфейса: v=2.0</div>
+        <div style="text-align:center; color:var(--text-sub); font-size:12px; margin-top:16px;">Версия интерфейса: v=2.1</div>
     </div>
 
+    <!-- НИЖНЕЕ МЕНЮ -->
+    <div class="tab-bar">
+        <button class="tab-item active" id="nav-home" onclick="switchTab('home')"><span class="tab-icon">🏠</span><span>Главная</span></button>
+        <button class="tab-item" id="nav-notes" onclick="switchTab('notes')"><span class="tab-icon">📝</span><span>Заметки</span></button>
+        <button class="tab-item" id="nav-media" onclick="switchTab('media')"><span class="tab-icon">▶️</span><span>Медиа</span></button>
+        <button class="tab-item" id="nav-settings" onclick="switchTab('settings')"><span class="tab-icon">⚙️</span><span>Настройки</span></button>
+    </div>
+
+    <!-- ПЛЕЕР И МОДАЛКИ (без изменений) -->
     <div class="mini-player" id="mini-player">
         <img id="mini-cover" class="mini-cover" src="" onclick="openFull()">
         <div class="mini-info" onclick="openFull()"><div class="mini-title" id="mini-title">Трек</div><div class="mini-sub" id="mini-time">0:00</div></div>
         <button class="icon-btn" onclick="prevTrack()">⏮</button>
         <button class="icon-btn" onclick="togglePlay()" id="mini-play-btn">▶</button>
         <button class="icon-btn" onclick="nextTrack()">⏭</button>
-    </div>
-
-           <div class="tab-bar">
-        <button class="tab-item" id="nav-home" onclick="switchTab('home')"><span class="tab-icon">🏠</span><span>Главная</span></button>
-        <button class="tab-item" id="nav-notes" onclick="switchTab('notes')"><span class="tab-icon">📝</span><span>Заметки</span></button>
-        <button class="tab-item active" id="nav-media" onclick="switchTab('media')"><span class="tab-icon">▶️</span><span>Медиа</span></button>
-        <button class="tab-item" id="nav-settings" onclick="switchTab('settings')"><span class="tab-icon">⚙️</span><span>Настройки</span></button>
     </div>
 
     <div class="full-player" id="full-player">
@@ -327,8 +304,8 @@
     </div>
 
     <audio id="audio"></audio>
-    <script src="https://vk.com"></script>
+    <script src="https://vk.com/js/api/openapi.js?169"></script>
     <script src="tracks.js"></script>
-    <script src="app.js?v=204"></script>
+    <script src="app.js?v=205"></script>
 </body>
 </html>
