@@ -78,18 +78,29 @@ function init() {
 
 function switchTab(tab) {
     activeTab = tab;
-    document.getElementById('tab-media').style.display = (tab === 'media') ? 'block' : 'none';
-    document.getElementById('tab-notes').style.display = (tab === 'notes') ? 'block' : 'none';
-    document.getElementById('tab-settings').style.display = (tab === 'settings') ? 'block' : 'none';
-    document.getElementById('nav-media').classList.toggle('active', tab === 'media');
-    document.getElementById('nav-notes').classList.toggle('active', tab === 'notes');
-    document.getElementById('nav-settings').classList.toggle('active', tab === 'settings');
-    var titles = { media: 'Медиа', notes: 'Артисты и заметки', settings: 'Настройки' };
+    // Скрываем все вкладки
+    ['home', 'media', 'notes', 'settings'].forEach(function(t) {
+        var el = document.getElementById('tab-' + t);
+        if (el) el.style.display = (t === tab) ? 'block' : 'none';
+    });
+    
+    // Подсвечиваем кнопку в меню
+    ['home', 'media', 'notes', 'settings'].forEach(function(t) {
+        var el = document.getElementById('nav-' + t);
+        if (el) el.classList.toggle('active', t === tab);
+    });
+
+    var titles = { home: 'Главная', media: 'Медиа', notes: 'Артисты и заметки', settings: 'Настройки' };
     document.getElementById('page-title').innerText = titles[tab];
-    document.getElementById('header-btns').style.display = (tab === 'settings') ? 'none' : 'flex';
+    
+    // Скрываем поиск и кнопку плюс на главной и настройках
+    document.getElementById('header-btns').style.display = (tab === 'settings' || tab === 'home') ? 'none' : 'flex';
     document.getElementById('search-wrap').classList.remove('open');
     document.getElementById('search-input').value = '';
-    renderCurrentTab();
+    
+    if (tab === 'home') renderHomePage();
+    else renderCurrentTab();
+
 }
 
 function toggleSearch() {
@@ -100,7 +111,11 @@ function toggleSearch() {
 }
 
 function onAddClick() { if (activeTab === 'notes') openNoteModal(); else openVideoModal(); }
-function renderCurrentTab() { if (activeTab === 'media') renderMediaList(); else if (activeTab === 'notes') renderNotesList(); }
+function renderCurrentTab() { 
+    if (activeTab === 'media') renderMediaList(); 
+    else if (activeTab === 'notes') renderNotesList(); 
+    else if (activeTab === 'home') renderHomePage(); // Новая строка
+}
 
 function seekAudio(val) { if (audio.duration) audio.currentTime = (val / 100) * audio.duration; }
 function fmtTime(sec) { var m = Math.floor(sec / 60), s = Math.floor(sec % 60); return m + ':' + (s < 10 ? '0' : '') + s; }
@@ -512,6 +527,132 @@ function searchCatalog(q) {
             });
         }).catch(function() { box.style.display = 'none'; });
     }, 400);
+}
+
+// --- ЛОГИКА ГЛАВНОГО ЭКРАНА ---
+var homeDataLoaded = false;
+
+function renderHomePage() {
+    if (homeDataLoaded) return; // Загружаем данные только один раз при открытии
+    homeDataLoaded = true;
+    
+    // 1. Новые релизы (Поиск по слову "New")
+    fetchITunes('new', 'album', 'home-new-releases');
+    
+    // 2. Топ артистов (Поиск по слову "Top")
+    fetchITunes('top', 'musicArtist', 'home-top-artists');
+    
+    // 3. Топ альбомов (Поиск по слову "Hits")
+    fetchITunes('hits', 'album', 'home-top-albums');
+    
+    // 4. Вам может понравиться (Рандомный запрос)
+    fetchITunes('indie', 'album', 'home-recommended');
+    
+    // 5. Отрисовка пользовательских плейлистов
+    renderUserPlaylists();
+}
+
+function fetchITunes(query, entity, containerId) {
+    var url = 'https://itunes.apple.com/search?term=' + encodeURIComponent(query) + '&entity=' + entity + '&limit=10&country=ru';
+    var container = document.getElementById(containerId);
+    if (!container) return;
+    
+    // Показываем скелетон загрузки
+    container.innerHTML = '<div style="color:var(--text-sub); font-size:12px;">Загрузка...</div>';
+
+    fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+        container.innerHTML = '';
+        if (!data.results || !data.results.length) {
+            container.innerHTML = '<div style="color:var(--text-sub); font-size:12px;">Нет данных</div>';
+            return;
+        }
+
+        data.results.forEach(function(item) {
+            var title = item.collectionName || item.artistName || 'Без названия';
+            var sub = item.artistName || (item.primaryGenreName || '');
+            var cover = item.artworkUrl100 ? item.artworkUrl100.replace('100x100bb', '300x300bb') : defaultCover;
+
+            var card = document.createElement('div');
+            card.className = 'home-card';
+            card.innerHTML = '<img src="' + cover + '"><div class="h-title">' + title + '</div><div class="h-sub">' + sub + '</div>';
+            
+            // При клике на карточку открываем модалку создания заметки с уже заполненными данными
+            card.onclick = function() {
+                openNoteModal();
+                document.getElementById('note-name').value = item.collectionName ? (item.artistName + ' - ' + item.collectionName) : item.artistName;
+                document.getElementById('note-tag').value = item.primaryGenreName || '';
+                document.getElementById('note-cover').value = cover;
+                if (item.collectionViewUrl || item.artistLinkUrl) {
+                    document.getElementById('note-link').value = item.collectionViewUrl || item.artistLinkUrl;
+                }
+            };
+            container.appendChild(card);
+        });
+    }).catch(function() {
+        container.innerHTML = '<div style="color:var(--text-sub); font-size:12px;">Ошибка загрузки</div>';
+    });
+}
+
+// --- ПОЛЬЗОВАТЕЛЬСКИЕ ПЛЕЙЛИСТЫ ---
+var userPlaylists = JSON.parse(localStorage.getItem('fx_playlists') || '[]');
+
+function renderUserPlaylists() {
+    var box = document.getElementById('home-playlists');
+    if (!box) return;
+    box.innerHTML = '';
+    
+    if (userPlaylists.length === 0) {
+        box.innerHTML = '<div style="color:var(--text-sub); font-size:12px; text-align:center; padding:10px;">У вас пока нет плейлистов. Добавьте ссылку на ВК, Яндекс или Spotify.</div>';
+        return;
+    }
+
+    userPlaylists.forEach(function(pl, index) {
+        var d = document.createElement('div');
+        d.className = 'track-item';
+        d.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:10px;';
+        
+        var info = document.createElement('div');
+        info.innerHTML = '<div style="font-weight:600; font-size:14px;">' + pl.title + '</div><div style="font-size:11px; color:var(--text-sub);">' + pl.service + '</div>';
+        
+        var act = document.createElement('div');
+        var a = document.createElement('a');
+        a.href = pl.url; a.target = '_blank'; a.innerText = '🔗 Открыть'; a.style.cssText = 'color:var(--accent); font-size:12px; text-decoration:none; margin-right:10px;';
+        
+        var del = document.createElement('button');
+        del.innerText = '✖'; del.style.cssText = 'background:none; border:none; color:#777; cursor:pointer;';
+        del.onclick = function(e) {
+            e.stopPropagation();
+            if(confirm('Удалить плейлист?')) {
+                userPlaylists.splice(index, 1);
+                localStorage.setItem('fx_playlists', JSON.stringify(userPlaylists));
+                renderUserPlaylists();
+            }
+        };
+        
+        act.appendChild(a); act.appendChild(del);
+        d.appendChild(info); d.appendChild(act);
+        box.appendChild(d);
+    });
+}
+
+function openPlaylistModal() {
+    var title = prompt('Название плейлиста (например: Мой русский рэп):');
+    if (!title) return;
+    
+    var url = prompt('Вставьте ссылку на плейлист (ВК, Яндекс, YouTube, Spotify, SoundCloud):');
+    if (!url) return;
+    
+    // Определяем сервис по ссылке
+    var service = 'Другое';
+    if (url.includes('vk.com')) service = 'ВКонтакте';
+    else if (url.includes('music.yandex')) service = 'Яндекс.Музыка';
+    else if (url.includes('spotify.com')) service = 'Spotify';
+    else if (url.includes('soundcloud.com')) service = 'SoundCloud';
+    else if (url.includes('youtube.com') || url.includes('youtu.be')) service = 'YouTube';
+    
+    userPlaylists.push({ title: title, url: url, service: service });
+    localStorage.setItem('fx_playlists', JSON.stringify(userPlaylists));
+    renderUserPlaylists();
 }
 
 // Запуск приложения
