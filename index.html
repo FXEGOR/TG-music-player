@@ -198,9 +198,20 @@
         </div>
     </div>
 
+        <div class="modal" id="confirm-modal">
+        <div class="modal-card">
+            <h3 style="margin-top:0;">FXMusic player</h3>
+            <p id="confirm-text" style="color:var(--text-main); font-size:14px; margin-bottom:18px;"></p>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button class="btn-dark" onclick="closeConfirmModal()">Отмена</button>
+                <button class="btn-accent" id="confirm-ok-btn" style="background:#ef4444; color:#fff;">Удалить</button>
+            </div>
+        </div>
+    </div>
+
     <audio id="audio"></audio>
     <script src="https://vk.com"></script>
     <script src="tracks.js"></script>
-    <script src="app.js?v=210"></script>
+    <script src="app.js?v=211"></script>
 </body>
 </html>
