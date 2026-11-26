@@ -543,26 +543,34 @@ function renderProfile() {
 
     if (!nameEl || !avatarEl || !statsEl) return;
 
-    // Пытаемся получить данные из Telegram
-    var user = null;
-    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
-        user = Telegram.WebApp.initDataUnsafe.user;
+    // Проверяем, загрузился ли вообще скрипт Telegram
+    if (!window.Telegram || !Telegram.WebApp) {
+        nameEl.textContent = 'Ошибка: Скрипт TG не загружен';
+        avatarEl.src = 'https://ui-avatars.com/api/?name=X&background=ff0000&color=fff&rounded=true';
+        return;
     }
+
+    // Пытаемся получить данные
+    var user = Telegram.WebApp.initDataUnsafe ? Telegram.WebApp.initDataUnsafe.user : null;
 
     if (user) {
         var fullName = (user.first_name || '') + (user.last_name ? ' ' + user.last_name : '');
         nameEl.textContent = fullName.trim() || 'Пользователь Telegram';
         
-        // Если есть аватарка в ТГ - ставим её, если нет - генерируем красивую заглушку с буквой
         if (user.photo_url) {
             avatarEl.src = user.photo_url;
         } else {
             avatarEl.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(fullName || 'U') + '&background=1db954&color=fff&rounded=true';
         }
     } else {
-        // Заглушка, если открыто в браузере (не в ТГ)
-        nameEl.textContent = 'Гость (Браузер)';
-        avatarEl.src = 'https://ui-avatars.com/api/?name=G&background=333333&color=fff&rounded=true';
+        // Если данные не пришли, выводим понятную причину
+        nameEl.textContent = 'Данные не получены';
+        avatarEl.src = 'https://ui-avatars.com/api/?name=?&background=333333&color=fff&rounded=true';
+        
+        // Выводим сырые данные для отладки прямо в статистику
+        var debugInfo = Telegram.WebApp.initData ? 'Есть initData' : 'Пустой initData';
+        statsEl.textContent = 'Открыто не по прямой ссылке. ' + debugInfo;
+        return;
     }
 
     // Считаем статистику
