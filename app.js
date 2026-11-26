@@ -23,6 +23,7 @@ var statusMap = {
     drop: { label: '🗑 Брошено', color: '#ef4444' }
 };
 
+// --- БАЗОВЫЕ УТИЛИТЫ ---
 function cleanName(name) {
     var str = Array.isArray(name) ? name.join('') : String(name || 'Без названия');
     return str.replace(/\.(mp3|m4a|ogg|wav)$/i, '').replace(/,\s*$/, '');
@@ -56,7 +57,7 @@ function init() {
     document.getElementById('big-cover').src = defaultCover;
 
     var grid = document.getElementById('vmp-playlists');
-    grid.innerHTML = ''; // Очистка перед добавлением
+    grid.innerHTML = '';
     vmpSections.forEach(function(s) {
         var d = document.createElement('div');
         d.className = 'vmp-card';
@@ -76,31 +77,25 @@ function init() {
     });
 }
 
+// --- ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ---
 function switchTab(tab) {
     activeTab = tab;
-    // Скрываем все вкладки
-    ['home', 'media', 'notes', 'settings'].forEach(function(t) {
+    var tabs = ['home', 'media', 'notes', 'settings'];
+    tabs.forEach(function(t) {
         var el = document.getElementById('tab-' + t);
         if (el) el.style.display = (t === tab) ? 'block' : 'none';
-    });
-    
-    // Подсвечиваем кнопку в меню
-    ['home', 'media', 'notes', 'settings'].forEach(function(t) {
-        var el = document.getElementById('nav-' + t);
-        if (el) el.classList.toggle('active', t === tab);
+        var navEl = document.getElementById('nav-' + t);
+        if (navEl) navEl.classList.toggle('active', t === tab);
     });
 
     var titles = { home: 'Главная', media: 'Медиа', notes: 'Артисты и заметки', settings: 'Настройки' };
-    document.getElementById('page-title').innerText = titles[tab];
-    
-    // Скрываем поиск и кнопку плюс на главной и настройках
+    document.getElementById('page-title').innerText = titles[tab] || 'FXMusic';
     document.getElementById('header-btns').style.display = (tab === 'settings' || tab === 'home') ? 'none' : 'flex';
     document.getElementById('search-wrap').classList.remove('open');
     document.getElementById('search-input').value = '';
     
     if (tab === 'home') renderHomePage();
     else renderCurrentTab();
-
 }
 
 function toggleSearch() {
@@ -114,12 +109,11 @@ function onAddClick() { if (activeTab === 'notes') openNoteModal(); else openVid
 function renderCurrentTab() { 
     if (activeTab === 'media') renderMediaList(); 
     else if (activeTab === 'notes') renderNotesList(); 
-    else if (activeTab === 'home') renderHomePage(); // Новая строка
 }
 
+// --- НАСТРОЙКИ И UI ---
 function seekAudio(val) { if (audio.duration) audio.currentTime = (val / 100) * audio.duration; }
 function fmtTime(sec) { var m = Math.floor(sec / 60), s = Math.floor(sec % 60); return m + ':' + (s < 10 ? '0' : '') + s; }
-
 function setTheme(t) {
     document.body.classList.toggle('amoled-theme', t === 'amoled');
     localStorage.setItem('fx_theme', t);
@@ -132,7 +126,6 @@ function openFull() { document.getElementById('full-player').classList.add('open
 function closeFull() { document.getElementById('full-player').classList.remove('open'); }
 function openVideoModal() { document.getElementById('video-modal').style.display = 'flex'; }
 function closeVideoModal() { document.getElementById('video-modal').style.display = 'none'; }
-
 function openNoteModal() {
     document.getElementById('note-modal-title').innerText = 'Новая карточка';
     document.getElementById('note-edit-id').value = ''; document.getElementById('note-name').value = '';
@@ -142,6 +135,7 @@ function openNoteModal() {
 }
 function closeNoteModal() { document.getElementById('note-modal').style.display = 'none'; }
 
+// --- ЗАМЕТКИ ---
 function editNote(id) {
     var item = savedTracks.find(function(t) { return String(t.id) === String(id); });
     if (!item) return;
@@ -161,19 +155,17 @@ function saveNote() {
     var status = document.getElementById('note-status').value, score = document.getElementById('note-score').value;
     var tag = document.getElementById('note-tag').value.trim(), link = document.getElementById('note-link').value.trim();
     var cover = document.getElementById('note-cover').value;
-    
     if (!name) { alert('Введи имя артиста или название!'); return; }
     if (editId) {
-        savedTracks.forEach(function(t) { 
-            if (String(t.id) === String(editId)) { 
-                t.title = name; t.status = status; t.score = score; t.artist = tag; t.url = link; t.cover = cover; 
-            } 
-        });
+        savedTracks.forEach(function(t) { if (String(t.id) === String(editId)) { t.title = name; t.status = status; t.score = score; t.artist = tag; t.url = link; t.cover = cover; } });
     } else {
         savedTracks.unshift({ id: Date.now(), type: 'note', title: name, status: status, score: score, artist: tag, pl: 'notes', url: link, cover: cover });
     }
     saveCloudTracks(); tracks = myMusic.concat(savedTracks); closeNoteModal(); renderNotesList();
 }
+
+function deleteNote(id) { savedTracks = savedTracks.filter(function(t) { return String(t.id) !== String(id); }); saveCloudTracks(); tracks = myMusic.concat(savedTracks); renderNotesList(); }
+function deleteVideo(vid) { savedTracks = savedTracks.filter(function(t) { return t.ytId !== vid; }); saveCloudTracks(); tracks = myMusic.concat(savedTracks); selectMediaSection(currentPl, document.getElementById('media-sub-title').innerText); }
 
 function saveYtVideo() {
     var url = document.getElementById('yt-url-input').value.trim(), title = document.getElementById('yt-title-input').value.trim() || 'ВК Видео';
@@ -185,20 +177,9 @@ function saveYtVideo() {
     closeVideoModal(); selectMediaSection(currentPl, document.getElementById('media-sub-title').innerText);
 }
 
-function deleteNote(id) { 
-    if(!confirm('Удалить заметку?')) return;
-    savedTracks = savedTracks.filter(function(t) { return String(t.id) !== String(id); }); 
-    saveCloudTracks(); tracks = myMusic.concat(savedTracks); renderNotesList(); 
-}
-function deleteVideo(vid) { 
-    if(!confirm('Удалить видео?')) return;
-    savedTracks = savedTracks.filter(function(t) { return t.ytId !== vid; }); 
-    saveCloudTracks(); tracks = myMusic.concat(savedTracks); selectMediaSection(currentPl, document.getElementById('media-sub-title').innerText); 
-}
-
 function exportData() {
     var str = JSON.stringify(savedTracks);
-    if (navigator.clipboard) { navigator.clipboard.writeText(str); alert('Код скопирован!'); }
+    if (navigator.clipboard) { navigator.clipboard.writeText(str); alert('Код скопирован! Отправь его себе в Избранное.'); }
     else { prompt('Скопируй этот код:', str); }
 }
 
@@ -218,6 +199,7 @@ function importData() {
     } catch(e) { alert('Ошибка: неверный формат кода.'); }
 }
 
+// --- МЕДИА ---
 function selectMediaSection(id, name) {
     currentPl = id;
     document.getElementById('media-sub-title').innerText = name;
@@ -234,15 +216,12 @@ function renderMediaList() {
         var rIdx = currentList.indexOf(x), d = document.createElement('div');
         var isCur = (x.type === 'audio' && audio.src && decodeURI(audio.src).indexOf(x.url) !== -1) || (x.type === 'yt' && ytFrame.src && ytFrame.src.indexOf(x.ytId.split('_').pop()) !== -1);
         d.className = 'track-item' + (isCur ? ' active' : '');
-        
         var img = document.createElement('img');
         img.className = 't-img'; img.loading = 'lazy'; img.src = x.cover ? x.cover : defaultCover;
         d.appendChild(img);
-        
         var sp = document.createElement('span');
         sp.textContent = cleanName(x.title); sp.style.cssText = 'flex:1; font-size:14px;';
         d.appendChild(sp);
-        
         if (x.custom) {
             var del = document.createElement('button');
             del.innerText = '✖'; del.style.cssText = 'background:none; border:none; color:#777; font-size:16px; padding:6px; cursor:pointer;';
@@ -265,15 +244,13 @@ function toggleNoteView() {
     noteGrid = !noteGrid;
     document.getElementById('notes-list').classList.toggle('grid-view', noteGrid);
     document.getElementById('view-btn').innerText = noteGrid ? '☰' : '⊞';
-    renderNotesList(); // Перерисовываем, чтобы применились классы
+    renderNotesList();
 }
 
-// ИСПРАВЛЕННАЯ ФУНКЦИЯ С ОБЛОЖКАМИ
 function renderNotesList() {
     var box = document.getElementById('notes-list');
     box.innerHTML = '';
     var q = document.getElementById('search-input').value.toLowerCase().trim();
-    
     var notes = tracks.filter(function(x) {
         if (x.type !== 'note') return false;
         var st = x.status || (x.done ? 'done' : 'plan');
@@ -281,75 +258,58 @@ function renderNotesList() {
         if (q && cleanName(x.title).toLowerCase().indexOf(q) === -1 && (!x.artist || x.artist.toLowerCase().indexOf(q) === -1)) return false;
         return true;
     });
-
     notes.forEach(function(x) {
         var stKey = x.status || (x.done ? 'done' : 'plan'), stObj = statusMap[stKey] || statusMap.plan;
         var d = document.createElement('div');
-        d.className = 'track-item'; 
-        d.style.borderLeft = '4px solid ' + stObj.color; 
-
-        // --- БЛОК ОБЛОЖКИ ---
+        d.className = 'track-item'; d.style.borderLeft = '4px solid ' + stObj.color;
+        
         var covSrc = x.cover ? x.cover : defaultCover;
         var img = document.createElement('img');
-        img.className = 't-img note-cover-img';
-        img.src = covSrc;
-        img.loading = 'lazy';
+        img.className = 't-img note-cover-img'; img.src = covSrc; img.loading = 'lazy';
         d.appendChild(img);
-        // --------------------
 
         var info = document.createElement('div');
         info.style.cssText = 'flex:1; min-width:0; width:100%;';
-        
         var top = document.createElement('div');
         top.style.cssText = 'font-weight:700; font-size:14px; margin-bottom:4px;';
         top.textContent = cleanName(x.title) + (x.score ? '  ★ ' + x.score + '/10' : '');
-        
         var sub = document.createElement('div');
         sub.style.cssText = 'font-size:12px; color:var(--text-sub);';
         sub.textContent = stObj.label + (x.artist ? ' • ' + x.artist : '');
-        
         info.appendChild(top); info.appendChild(sub); d.appendChild(info);
-        
         var act = document.createElement('div');
         act.style.cssText = 'display:flex; align-items:center; gap:2px;';
-        
         if (x.url) {
             var a = document.createElement('a');
             a.href = x.url; a.target = '_blank'; a.innerText = '🔗'; a.style.cssText = 'text-decoration:none; font-size:17px; padding:6px;';
             a.onclick = function(e) { e.stopPropagation(); };
             act.appendChild(a);
         }
-        
         var ed = document.createElement('button');
         ed.innerText = '✏️'; ed.style.cssText = 'background:none; border:none; font-size:16px; padding:6px; cursor:pointer;';
         ed.onclick = function(e) { e.stopPropagation(); editNote(x.id); };
         act.appendChild(ed);
-        
         var dl = document.createElement('button');
         dl.innerText = '✖'; dl.style.cssText = 'background:none; border:none; color:#777; font-size:16px; padding:6px; cursor:pointer;';
         dl.onclick = function(e) { e.stopPropagation(); deleteNote(x.id); };
         act.appendChild(dl);
-        
-        d.appendChild(act); 
-        box.appendChild(d);
+        d.appendChild(act); box.appendChild(d);
     });
 }
 
+// --- ПЛЕЕР ---
 function play(i) {
     idx = i;
     var x = currentList[idx];
     if (!x || x.type === 'note') return;
     var cov = x.cover ? x.cover : defaultCover, tc = cleanName(x.title);
-    
     document.getElementById('mini-player').classList.add('visible');
     document.getElementById('mini-cover').src = cov; document.getElementById('big-cover').src = cov;
     document.getElementById('mini-title').textContent = tc; document.getElementById('big-title').textContent = tc;
     document.getElementById('big-artist').textContent = x.artist || '';
-    
     if (x.type === 'yt') {
         audio.pause(); audio.src = ''; ytBox.style.display = 'block';
         var ids = x.ytId.split('_');
-        
         ytFrame.onload = function() {
             if (window.VK && VK.VideoPlayer) {
                 vkPlayerObj = VK.VideoPlayer(ytFrame);
@@ -366,57 +326,23 @@ function play(i) {
     }
     renderMediaList();
 }
-
-function syncBtns(ic) { 
-    document.getElementById('mini-play-btn').innerText = ic; 
-    document.getElementById('big-play-btn').innerText = ic; 
-}
-
-function togglePlay() { 
-    if (ytBox.style.display === 'block') return; 
-    if (!audio.src && currentList.length) { play(0); return; } 
-    if (audio.paused) { audio.play(); syncBtns('⏸'); } else { audio.pause(); syncBtns('▶'); } 
-}
-
-function nextTrack() { 
-    if (!currentList.length) return; 
-    if (idx + 1 < currentList.length) play(idx + 1); 
-    else if (repeatMode === 1) play(0); 
-    else { audio.pause(); syncBtns('▶'); } 
-}
-
-function prevTrack() { 
-    if (!currentList.length) return; 
-    if (audio.currentTime > 3) audio.currentTime = 0; 
-    else play((idx - 1 + currentList.length) % currentList.length); 
-}
-
+function syncBtns(ic) { document.getElementById('mini-play-btn').innerText = ic; document.getElementById('big-play-btn').innerText = ic; }
+function togglePlay() { if (ytBox.style.display === 'block') return; if (!audio.src && currentList.length) { play(0); return; } if (audio.paused) { audio.play(); syncBtns('⏸'); } else { audio.pause(); syncBtns('▶'); } }
+function nextTrack() { if (!currentList.length) return; if (idx + 1 < currentList.length) play(idx + 1); else if (repeatMode === 1) play(0); else { audio.pause(); syncBtns('▶'); } }
+function prevTrack() { if (!currentList.length) return; if (audio.currentTime > 3) audio.currentTime = 0; else play((idx - 1 + currentList.length) % currentList.length); }
 function shuffleQueue() {
     if (!currentList.length) return;
     var cur = audio.src ? currentList[idx] : null;
-    for (var i = currentList.length - 1; i > 0; i--) { 
-        var j = Math.floor(Math.random() * (i + 1)); 
-        var tmp = currentList[i]; currentList[i] = currentList[j]; currentList[j] = tmp; 
-    }
-    if (cur) { 
-        var ni = currentList.indexOf(cur); 
-        if (ni > 0) { currentList.splice(ni, 1); currentList.unshift(cur); } 
-        idx = 0; renderMediaList(); 
-    } else play(0);
+    for (var i = currentList.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var tmp = currentList[i]; currentList[i] = currentList[j]; currentList[j] = tmp; }
+    if (cur) { var ni = currentList.indexOf(cur); if (ni > 0) { currentList.splice(ni, 1); currentList.unshift(cur); } idx = 0; renderMediaList(); } else play(0);
 }
-
 function toggleRepeat() {
     repeatMode = (repeatMode + 1) % 3;
     var b = document.getElementById('big-rep-btn');
     b.innerText = (repeatMode === 2) ? '🔂' : '🔁';
     b.classList.toggle('active', repeatMode > 0);
 }
-
-audio.addEventListener('ended', function() { 
-    if (repeatMode === 2) { audio.currentTime = 0; audio.play(); } 
-    else nextTrack(); 
-});
-
+audio.addEventListener('ended', function() { if (repeatMode === 2) { audio.currentTime = 0; audio.play(); } else nextTrack(); });
 audio.addEventListener('timeupdate', function() {
     if (!audio.duration) return;
     document.getElementById('big-seek').value = (audio.currentTime / audio.duration) * 100;
@@ -425,6 +351,7 @@ audio.addEventListener('timeupdate', function() {
     document.getElementById('big-cur').innerText = c; document.getElementById('big-dur').innerText = d;
 });
 
+// --- ЭКСПОРТ/ИМПОРТ ---
 function exportFile() {
     var blob = new Blob([JSON.stringify(savedTracks, null, 2)], { type: 'application/json' });
     var a = document.createElement('a');
@@ -432,7 +359,6 @@ function exportFile() {
     a.download = 'fxmusic_backup.json';
     a.click();
 }
-
 function importFile(e) {
     var file = e.target.files[0];
     if (!file) return;
@@ -452,7 +378,6 @@ function importFile(e) {
     };
     reader.readAsText(file);
 }
-
 function exportChunks() {
     var total = savedTracks.length;
     if (!total) { alert('Список пуст!'); return; }
@@ -460,29 +385,23 @@ function exportChunks() {
     savedTracks.forEach(function(item) {
         cur.push(item);
         if (JSON.stringify(cur).length > 3200) {
-            cur.pop();
-            chunks.push(JSON.stringify(cur));
-            cur = [item];
+            cur.pop(); chunks.push(JSON.stringify(cur)); cur = [item];
         }
     });
     if (cur.length) chunks.push(JSON.stringify(cur));
-
     function copyNext(idx) {
         if (idx >= chunks.length) { alert('Все части скопированы!'); return; }
         navigator.clipboard.writeText(chunks[idx]).then(function() {
-            if (chunks.length === 1) {
-                alert('База скопирована целиком! Отправь её в Избранное.');
-            } else if (confirm('Часть ' + (idx + 1) + ' из ' + chunks.length + ' скопирована! Отправь её в Избранное, затем нажми ОК для следующей части.')) {
-                copyNext(idx + 1);
-            }
+            if (chunks.length === 1) alert('База скопирована целиком!');
+            else if (confirm('Часть ' + (idx + 1) + ' из ' + chunks.length + ' скопирована! Нажми ОК для следующей.')) copyNext(idx + 1);
         });
     }
     copyNext(0);
 }
 
+// --- ПОИСК ITUNES ---
 var searchTimer = null;
 var apiBase = atob('aHR0cHM6Ly9pdHVuZXMuYXBwbGUuY29tL3NlYXJjaD90ZXJtPQ==');
-
 function searchCatalog(q) {
     clearTimeout(searchTimer);
     var box = document.getElementById('api-results');
@@ -501,26 +420,18 @@ function searchCatalog(q) {
                 var cov = item.artworkUrl100 ? item.artworkUrl100.replace('100x100bb', '600x600bb') : '';
                 if (cov) {
                     var im = document.createElement('img');
-                    im.src = item.artworkUrl100;
-                    im.style.cssText = 'width:36px; height:36px; border-radius:6px; object-fit:cover;';
+                    im.src = item.artworkUrl100; im.style.cssText = 'width:36px; height:36px; border-radius:6px; object-fit:cover;';
                     row.appendChild(im);
                 }
                 var inf = document.createElement('div');
                 inf.style.cssText = 'min-width:0; flex:1;';
-                var d1 = document.createElement('div');
-                d1.style.cssText = 'font-size:13px; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;';
-                d1.textContent = title;
-                var d2 = document.createElement('div');
-                d2.style.cssText = 'font-size:11px; color:var(--text-sub);';
-                d2.textContent = sub;
-                inf.appendChild(d1); inf.appendChild(d2); row.appendChild(inf);
+                inf.innerHTML = '<div style="font-size:13px; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + title + '</div><div style="font-size:11px; color:var(--text-sub);">' + sub + '</div>';
+                row.appendChild(inf);
                 row.onclick = function() {
                     document.getElementById('note-name').value = item.collectionName ? (item.artistName + ' - ' + item.collectionName) : item.artistName;
                     document.getElementById('note-tag').value = item.primaryGenreName || '';
                     document.getElementById('note-cover').value = cov;
-                    if (item.collectionViewUrl || item.artistLinkUrl) {
-                        document.getElementById('note-link').value = item.collectionViewUrl || item.artistLinkUrl;
-                    }
+                    if (item.collectionViewUrl || item.artistLinkUrl) document.getElementById('note-link').value = item.collectionViewUrl || item.artistLinkUrl;
                     box.style.display = 'none';
                 };
                 box.appendChild(row);
@@ -533,22 +444,14 @@ function searchCatalog(q) {
 var homeDataLoaded = false;
 
 function renderHomePage() {
-    if (homeDataLoaded) return; // Загружаем данные только один раз при открытии
+    if (homeDataLoaded) return;
     homeDataLoaded = true;
     
-    // 1. Новые релизы (Поиск по слову "New")
     fetchITunes('new', 'album', 'home-new-releases');
-    
-    // 2. Топ артистов (Поиск по слову "Top")
     fetchITunes('top', 'musicArtist', 'home-top-artists');
-    
-    // 3. Топ альбомов (Поиск по слову "Hits")
     fetchITunes('hits', 'album', 'home-top-albums');
-    
-    // 4. Вам может понравиться (Рандомный запрос)
     fetchITunes('indie', 'album', 'home-recommended');
     
-    // 5. Отрисовка пользовательских плейлистов
     renderUserPlaylists();
 }
 
@@ -556,8 +459,6 @@ function fetchITunes(query, entity, containerId) {
     var url = 'https://itunes.apple.com/search?term=' + encodeURIComponent(query) + '&entity=' + entity + '&limit=10&country=ru';
     var container = document.getElementById(containerId);
     if (!container) return;
-    
-    // Показываем скелетон загрузки
     container.innerHTML = '<div style="color:var(--text-sub); font-size:12px;">Загрузка...</div>';
 
     fetch(url).then(function(r) { return r.json(); }).then(function(data) {
@@ -566,7 +467,6 @@ function fetchITunes(query, entity, containerId) {
             container.innerHTML = '<div style="color:var(--text-sub); font-size:12px;">Нет данных</div>';
             return;
         }
-
         data.results.forEach(function(item) {
             var title = item.collectionName || item.artistName || 'Без названия';
             var sub = item.artistName || (item.primaryGenreName || '');
@@ -575,16 +475,12 @@ function fetchITunes(query, entity, containerId) {
             var card = document.createElement('div');
             card.className = 'home-card';
             card.innerHTML = '<img src="' + cover + '"><div class="h-title">' + title + '</div><div class="h-sub">' + sub + '</div>';
-            
-            // При клике на карточку открываем модалку создания заметки с уже заполненными данными
             card.onclick = function() {
                 openNoteModal();
                 document.getElementById('note-name').value = item.collectionName ? (item.artistName + ' - ' + item.collectionName) : item.artistName;
                 document.getElementById('note-tag').value = item.primaryGenreName || '';
                 document.getElementById('note-cover').value = cover;
-                if (item.collectionViewUrl || item.artistLinkUrl) {
-                    document.getElementById('note-link').value = item.collectionViewUrl || item.artistLinkUrl;
-                }
+                if (item.collectionViewUrl || item.artistLinkUrl) document.getElementById('note-link').value = item.collectionViewUrl || item.artistLinkUrl;
             };
             container.appendChild(card);
         });
@@ -600,35 +496,22 @@ function renderUserPlaylists() {
     var box = document.getElementById('home-playlists');
     if (!box) return;
     box.innerHTML = '';
-    
     if (userPlaylists.length === 0) {
-        box.innerHTML = '<div style="color:var(--text-sub); font-size:12px; text-align:center; padding:10px;">У вас пока нет плейлистов. Добавьте ссылку на ВК, Яндекс или Spotify.</div>';
+        box.innerHTML = '<div style="color:var(--text-sub); font-size:12px; text-align:center; padding:10px;">У вас пока нет плейлистов.</div>';
         return;
     }
-
     userPlaylists.forEach(function(pl, index) {
         var d = document.createElement('div');
         d.className = 'track-item';
         d.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:10px;';
-        
         var info = document.createElement('div');
         info.innerHTML = '<div style="font-weight:600; font-size:14px;">' + pl.title + '</div><div style="font-size:11px; color:var(--text-sub);">' + pl.service + '</div>';
-        
         var act = document.createElement('div');
         var a = document.createElement('a');
         a.href = pl.url; a.target = '_blank'; a.innerText = '🔗 Открыть'; a.style.cssText = 'color:var(--accent); font-size:12px; text-decoration:none; margin-right:10px;';
-        
         var del = document.createElement('button');
         del.innerText = '✖'; del.style.cssText = 'background:none; border:none; color:#777; cursor:pointer;';
-        del.onclick = function(e) {
-            e.stopPropagation();
-            if(confirm('Удалить плейлист?')) {
-                userPlaylists.splice(index, 1);
-                localStorage.setItem('fx_playlists', JSON.stringify(userPlaylists));
-                renderUserPlaylists();
-            }
-        };
-        
+        del.onclick = function(e) { e.stopPropagation(); if(confirm('Удалить?')) { userPlaylists.splice(index, 1); localStorage.setItem('fx_playlists', JSON.stringify(userPlaylists)); renderUserPlaylists(); } };
         act.appendChild(a); act.appendChild(del);
         d.appendChild(info); d.appendChild(act);
         box.appendChild(d);
@@ -636,24 +519,19 @@ function renderUserPlaylists() {
 }
 
 function openPlaylistModal() {
-    var title = prompt('Название плейлиста (например: Мой русский рэп):');
+    var title = prompt('Название плейлиста:');
     if (!title) return;
-    
-    var url = prompt('Вставьте ссылку на плейлист (ВК, Яндекс, YouTube, Spotify, SoundCloud):');
+    var url = prompt('Ссылка на плейлист (ВК, Яндекс, YouTube, Spotify, SoundCloud):');
     if (!url) return;
-    
-    // Определяем сервис по ссылке
     var service = 'Другое';
     if (url.includes('vk.com')) service = 'ВКонтакте';
     else if (url.includes('music.yandex')) service = 'Яндекс.Музыка';
     else if (url.includes('spotify.com')) service = 'Spotify';
     else if (url.includes('soundcloud.com')) service = 'SoundCloud';
     else if (url.includes('youtube.com') || url.includes('youtu.be')) service = 'YouTube';
-    
     userPlaylists.push({ title: title, url: url, service: service });
     localStorage.setItem('fx_playlists', JSON.stringify(userPlaylists));
     renderUserPlaylists();
 }
 
-// Запуск приложения
 init();
