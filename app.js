@@ -159,26 +159,8 @@ function saveYtVideo() {
     closeVideoModal(); selectMediaSection(currentPl, document.getElementById('media-sub-title').innerText);
 }
 
-function closeConfirmModal() {
-    document.getElementById('confirm-modal').style.display = 'none';
-}
-
-function deleteNote(id) {
-    var item = savedTracks.find(function(t) { return String(t.id) === String(id); });
-    var title = item ? cleanName(item.title) : 'эту заметку';
-
-    document.getElementById('confirm-text').textContent = 'Точно удалить «' + title + '»?';
-    document.getElementById('confirm-modal').style.display = 'flex';
-
-    document.getElementById('confirm-ok-btn').onclick = function() {
-        savedTracks = savedTracks.filter(function(t) { return String(t.id) !== String(id); });
-        saveCloudTracks();
-        tracks = myMusic.concat(savedTracks);
-        renderNotesList();
-        closeConfirmModal();
-    };
-
-}
+function deleteNote(id) { savedTracks = savedTracks.filter(function(t) { return String(t.id) !== String(id); }); saveCloudTracks(); tracks = myMusic.concat(savedTracks); renderNotesList(); }
+function deleteVideo(vid) { savedTracks = savedTracks.filter(function(t) { return t.ytId !== vid; }); saveCloudTracks(); tracks = myMusic.concat(savedTracks); selectMediaSection(currentPl, document.getElementById('media-sub-title').innerText); }
 
 function exportData() {
     var str = JSON.stringify(savedTracks);
