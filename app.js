@@ -86,6 +86,7 @@ function switchTab(tab) {
         if (el) el.style.display = (t === tab) ? 'block' : 'none';
         var navEl = document.getElementById('nav-' + t);
         if (navEl) navEl.classList.toggle('active', t === tab);
+        if (tab === 'settings') renderProfile();
     });
 
     var titles = { home: 'Главная', media: 'Медиа', notes: 'Артисты и заметки', settings: 'Настройки' };
@@ -532,6 +533,43 @@ function openPlaylistModal() {
     userPlaylists.push({ title: title, url: url, service: service });
     localStorage.setItem('fx_playlists', JSON.stringify(userPlaylists));
     renderUserPlaylists();
+}
+
+// --- ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ ---
+function renderProfile() {
+    var nameEl = document.getElementById('prof-name');
+    var avatarEl = document.getElementById('prof-avatar');
+    var statsEl = document.getElementById('prof-stats');
+
+    if (!nameEl || !avatarEl || !statsEl) return;
+
+    // Пытаемся получить данные из Telegram
+    var user = null;
+    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
+        user = Telegram.WebApp.initDataUnsafe.user;
+    }
+
+    if (user) {
+        var fullName = (user.first_name || '') + (user.last_name ? ' ' + user.last_name : '');
+        nameEl.textContent = fullName.trim() || 'Пользователь Telegram';
+        
+        // Если есть аватарка в ТГ - ставим её, если нет - генерируем красивую заглушку с буквой
+        if (user.photo_url) {
+            avatarEl.src = user.photo_url;
+        } else {
+            avatarEl.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(fullName || 'U') + '&background=1db954&color=fff&rounded=true';
+        }
+    } else {
+        // Заглушка, если открыто в браузере (не в ТГ)
+        nameEl.textContent = 'Гость (Браузер)';
+        avatarEl.src = 'https://ui-avatars.com/api/?name=G&background=333333&color=fff&rounded=true';
+    }
+
+    // Считаем статистику
+    var notesCount = tracks.filter(function(x) { return x.type === 'note'; }).length;
+    var playlistsCount = userPlaylists ? userPlaylists.length : 0;
+    
+    statsEl.textContent = 'Заметок: ' + notesCount + ' • Плейлистов: ' + playlistsCount;
 }
 
 init();
