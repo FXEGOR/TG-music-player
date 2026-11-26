@@ -242,7 +242,62 @@ function selectMediaSection(id, name) {
 // (функции рендеринга списка, фильтрации и управления заметками)
 
 function renderNotesList() {
-    // логика отрисовки заметок и управления плеером
+    var box = document.getElementById('notes-list');
+    box.innerHTML = '';
+    var q = document.getElementById('search-input').value.toLowerCase().trim();
+    var notes = tracks.filter(function(x) {
+        if (x.type !== 'note') return false;
+        var st = x.status || (x.done ? 'done' : 'plan');
+        if (noteFilter !== 'all' && st !== noteFilter) return false;
+        if (q && cleanName(x.title).toLowerCase().indexOf(q) === -1 && (!x.artist || x.artist.toLowerCase().indexOf(q) === -1)) return false;
+        return true;
+    });
+
+    notes.forEach(function(x) {
+        var stKey = x.status || (x.done ? 'done' : 'plan'), stObj = statusMap[stKey] || statusMap.plan;
+        var d = document.createElement('div');
+        d.className = 'track-item'; 
+        d.style.borderLeft = '4px solid ' + stObj.color; // Сохраняем полоску
+
+        // --- НОВЫЙ БЛОК: ДОБАВЛЯЕМ ОБЛОЖКУ ---
+        var covSrc = x.cover ? x.cover : defaultCover;
+        var img = document.createElement('img');
+        img.className = 't-img note-cover-img';
+        img.src = covSrc;
+        img.loading = 'lazy';
+        d.appendChild(img);
+        // -------------------------------------
+
+        var info = document.createElement('div');
+        info.style.cssText = 'flex:1; min-width:0; width:100%;';
+        var top = document.createElement('div');
+        top.style.cssText = 'font-weight:700; font-size:14px; margin-bottom:4px;';
+        top.textContent = cleanName(x.title) + (x.score ? '  ★ ' + x.score + '/10' : '');
+        var sub = document.createElement('div');
+        sub.style.cssText = 'font-size:12px; color:var(--text-sub);';
+        sub.textContent = stObj.label + (x.artist ? ' • ' + x.artist : '');
+        info.appendChild(top); info.appendChild(sub); d.appendChild(info);
+        
+        var act = document.createElement('div');
+        act.style.cssText = 'display:flex; align-items:center; gap:2px;';
+        if (x.url) {
+            var a = document.createElement('a');
+            a.href = x.url; a.target = '_blank'; a.innerText = '🔗'; a.style.cssText = 'text-decoration:none; font-size:17px; padding:6px;';
+            a.onclick = function(e) { e.stopPropagation(); };
+            act.appendChild(a);
+        }
+        var ed = document.createElement('button');
+        ed.innerText = '✏️'; ed.style.cssText = 'background:none; border:none; font-size:16px; padding:6px; cursor:pointer;';
+        ed.onclick = function(e) { e.stopPropagation(); editNote(x.id); };
+        act.appendChild(ed);
+        var dl = document.createElement('button');
+        dl.innerText = '✖'; dl.style.cssText = 'background:none; border:none; color:#777; font-size:16px; padding:6px; cursor:pointer;';
+        dl.onclick = function(e) { e.stopPropagation(); deleteNote(x.id); };
+        act.appendChild(dl);
+        
+        d.appendChild(act); box.appendChild(d);
+    });
+}
 }
 
 
