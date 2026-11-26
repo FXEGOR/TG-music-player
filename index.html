@@ -87,6 +87,12 @@
         .modal-card input, .modal-card select { width: 100%; padding: 10px 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-body); color: var(--text-main); font-size: 14px; }
         .btn-accent { background: var(--accent); color: #000; border: none; padding: 9px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 13px; }
         .btn-dark { background: var(--bg-body); color: var(--text-main); border: 1px solid var(--border); padding: 9px 14px; border-radius: 20px; cursor: pointer; font-size: 13px; }
+            /* Стили для карточки профиля */
+        .profile-card { display: flex; align-items: center; gap: 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+        .profile-avatar { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; background: #333; flex-shrink: 0; }
+        .profile-info { flex: 1; min-width: 0; }
+        .profile-name { font-size: 16px; font-weight: 700; margin: 0 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .profile-stats { font-size: 12px; color: var(--text-sub); }
     </style>
 </head>
 <body>
@@ -167,6 +173,16 @@
     </div>
 
     <div id="tab-settings" style="display:none;">
+        
+        <!-- НОВАЯ КАРТОЧКА ПРОФИЛЯ -->
+        <div class="profile-card">
+            <img id="prof-avatar" class="profile-avatar" src="" alt="Avatar">
+            <div class="profile-info">
+                <div class="profile-name" id="prof-name">Пользователь</div>
+                <div class="profile-stats" id="prof-stats">Заметок: 0 • Плейлистов: 0</div>
+            </div>
+        </div>
+          
         <div class="set-group">
             <p class="set-title">Оформление интерфейса</p>
             <div class="seg-row">
