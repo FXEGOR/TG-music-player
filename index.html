@@ -33,6 +33,15 @@
         .track-item.active { border-color: var(--accent); }
         .items-list.grid-view .track-item { flex-direction: column; align-items: flex-start; justify-content: space-between; min-height: 110px; }
         .t-img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: #2a2a2a; flex-shrink: 0; }
+                /* Стили для Главного экрана */
+        .home-section { margin-bottom: 24px; }
+        .home-title { font-size: 16px; font-weight: 700; margin: 0 0 12px 0; }
+        .home-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
+        .home-scroll::-webkit-scrollbar { display: none; }
+        .home-card { min-width: 120px; max-width: 120px; background: var(--bg-card); border-radius: 10px; padding: 8px; text-align: center; cursor: pointer; border: 1px solid var(--border); }
+        .home-card img { width: 100%; aspect-ratio: 1/1; border-radius: 8px; object-fit: cover; margin-bottom: 8px; }
+        .home-card .h-title { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .home-card .h-sub { font-size: 10px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         ./* Стили для обложек в режиме сетки */
 .items-list.grid-view .note-cover-img {
     width: 100%;
@@ -95,6 +104,41 @@
     <script>window.onerror = function(m, u, l) { if (m === 'Script error.' && l === 0) return; var b = document.getElementById('err-box'); b.style.display = 'block'; b.innerText = 'Ошибка: ' + m + ' (строка ' + l + ')'; };</script>
 
     <div id="tab-media">
+            <!-- НОВЫЙ ГЛАВНЫЙ ЭКРАН -->
+    <div id="tab-home">
+        <!-- Секция: Новые релизы -->
+        <div class="home-section">
+            <h3 class="home-title">Новые релизы</h3>
+            <div class="home-scroll" id="home-new-releases"></div>
+        </div>
+
+        <!-- Секция: Топ артистов -->
+        <div class="home-section">
+            <h3 class="home-title">Глобальный топ артистов</h3>
+            <div class="home-scroll" id="home-top-artists"></div>
+        </div>
+
+        <!-- Секция: Топ альбомов -->
+        <div class="home-section">
+            <h3 class="home-title">Топ альбомов</h3>
+            <div class="home-scroll" id="home-top-albums"></div>
+        </div>
+
+        <!-- Секция: Вам может понравиться -->
+        <div class="home-section">
+            <h3 class="home-title">Вам может понравиться</h3>
+            <div class="home-scroll" id="home-recommended"></div>
+        </div>
+
+        <!-- Секция: Мои плейлисты -->
+        <div class="home-section">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 class="home-title" style="margin:0;">Мои плейлисты</h3>
+                <button class="btn-dark" style="padding:4px 10px; font-size:12px;" onclick="openPlaylistModal()">+ Добавить</button>
+            </div>
+            <div id="home-playlists" class="items-list"></div>
+        </div>
+    </div>
         <div class="vmp-grid" id="vmp-playlists"></div>
         <div class="yt-box" id="yt-container"><iframe id="yt-frame" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -156,9 +200,12 @@
         <button class="icon-btn" onclick="nextTrack()">⏭</button>
     </div>
 
-    <div class="tab-bar">
+        <div class="tab-bar">
+        <!-- НОВАЯ ВКЛАДКА -->
+        <button class="tab-item active" id="nav-home" onclick="switchTab('home')"><span class="tab-icon">🏠</span><span>Главная</span></button>
+        
         <button class="tab-item" id="nav-notes" onclick="switchTab('notes')"><span class="tab-icon">📝</span><span>Заметки</span></button>
-        <button class="tab-item active" id="nav-media" onclick="switchTab('media')"><span class="tab-icon">▶️</span><span>Медиа</span></button>
+        <button class="tab-item" id="nav-media" onclick="switchTab('media')"><span class="tab-icon">▶️</span><span>Медиа</span></button>
         <button class="tab-item" id="nav-settings" onclick="switchTab('settings')"><span class="tab-icon">⚙️</span><span>Настройки</span></button>
     </div>
 
