@@ -162,13 +162,23 @@ function saveYtVideo() {
 function deleteNote(id) {
     var item = savedTracks.find(function(t) { return String(t.id) === String(id); });
     var title = item ? cleanName(item.title) : 'эту заметку';
-    
-    if (!confirm('Точно удалить «' + title + '»?')) return;
+    var msg = 'Точно удалить «' + title + '»?';
 
-    savedTracks = savedTracks.filter(function(t) { return String(t.id) !== String(id); });
-    saveCloudTracks();
-    tracks = myMusic.concat(savedTracks);
-    renderNotesList();
+    function doDelete() {
+        savedTracks = savedTracks.filter(function(t) { return String(t.id) !== String(id); });
+        saveCloudTracks();
+        tracks = myMusic.concat(savedTracks);
+        renderNotesList();
+    }
+
+    if (window.Telegram && Telegram.WebApp && Telegram.WebApp.showConfirm) {
+        Telegram.WebApp.showConfirm(msg, function(ok) {
+            if (ok) doDelete();
+        });
+    } else {
+        if (confirm(msg)) doDelete();
+    }
+
 }
 
 function exportData() {
