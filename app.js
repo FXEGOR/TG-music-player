@@ -580,4 +580,79 @@ function renderProfile() {
     statsEl.textContent = 'Заметок: ' + notesCount + ' • Плейлистов: ' + playlistsCount;
 }
 
+// --- СИНХРОНИЗАЦИЯ ЧЕРЕЗ PYTHONANYWHERE ---
+var SYNC_URL = 'https://FXEGOR.pythonanywhere.com'; // ЗАМЕНИТЬ!
+
+function syncToBot() {
+    var statusEl = document.getElementById('sync-status');
+    if (!window.Telegram || !Telegram.WebApp.initDataUnsafe.user) {
+        if (statusEl) statusEl.textContent = 'Ошибка: открой через кнопку Menu в боте';
+        return;
+    }
+    
+    var userId = Telegram.WebApp.initDataUnsafe.user.id;
+    var dataStr = JSON.stringify(savedTracks);
+    
+    if (statusEl) statusEl.textContent = 'Сохранение в облако...';
+
+    fetch(SYNC_URL + '/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, data: dataStr })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(res) {
+        if (res.status === 'ok') {
+            if (statusEl) statusEl.textContent = '✅ База сохранена в облаке!';
+            alert('Успех! Твоя база сохранена на сервере. Теперь её можно загрузить с любого устройства.');
+        } else {
+            if (statusEl) statusEl.textContent = '❌ Ошибка сохранения';
+        }
+    })
+    .catch(function(e) { 
+        if (statusEl) statusEl.textContent = '❌ Ошибка сети';
+        console.error(e);
+    });
+}
+
+function syncFromBot() {
+    var statusEl = document.getElementById('sync-status');
+    if (!window.Telegram || !Telegram.WebApp.initDataUnsafe.user) {
+        if (statusEl) statusEl.textContent = 'Ошибка: открой через кнопку Menu в боте';
+        return;
+    }
+
+    var userId = Telegram.WebApp.initDataUnsafe.user.id;
+    if (statusEl) statusEl.textContent = 'Загрузка из облака...';
+
+    fetch(SYNC_URL + '/api/get/' + userId)
+    .then(function(res) { return res.json(); })
+    .then(function(res) {
+        if (res.status === 'ok' && res.data) {
+            var parsed = JSON.parse(res.data);
+            if (Array.isArray(parsed)) {
+                savedTracks = parsed;
+                // Сохраняем локально
+                localStorage.setItem('my_tg_tracks', JSON.stringify(savedTracks));
+                if (window.Telegram && Telegram.WebApp.CloudStorage) {
+                    Telegram.WebApp.CloudStorage.setItem('my_tg_tracks', JSON.stringify(savedTracks));
+                }
+                // Обновляем интерфейс
+                tracks = myMusic.concat(savedTracks);
+                renderCurrentTab();
+                renderProfile();
+                if (statusEl) statusEl.textContent = '✅ База загружена!';
+                alert('Успех! База загружена с сервера и обновлена.');
+            }
+        } else {
+            if (statusEl) statusEl.textContent = '❌ На сервере нет сохранений';
+            alert('На сервере пока нет сохранений. Сначала нажми "Сохранить в облако".');
+        }
+    })
+    .catch(function(e) { 
+        if (statusEl) statusEl.textContent = '❌ Ошибка сети';
+        console.error(e);
+    });
+}
+
 init();
