@@ -655,27 +655,5 @@ function syncFromBot() {
     });
 }
 
-@app.route('/api/vk_token', methods=['POST'])
-def save_vk_token():
-    req = request.json
-    tg_id = str(req.get('tg_id'))
-    vk_token = req.get('vk_token')
-    vk_user_id = req.get('vk_user_id')
-    
-    if not tg_id or not vk_token:
-        return jsonify({"status": "error", "message": "Нет данных"}), 400
-        
-    conn = sqlite3.connect('backups.db')
-    c = conn.cursor()
-    
-    # Создаем таблицу для токенов, если её еще нет
-    c.execute('''CREATE TABLE IF NOT EXISTS vk_tokens (tg_id TEXT PRIMARY KEY, vk_token TEXT, vk_user_id TEXT)''')
-    # Сохраняем токен (или обновляем, если уже есть)
-    c.execute('REPLACE INTO vk_tokens (tg_id, vk_token, vk_user_id) VALUES (?, ?, ?)', (tg_id, vk_token, vk_user_id))
-    
-    conn.commit()
-    conn.close()
-    
-    return jsonify({"status": "ok", "message": "Токен сохранен"})
 
 init();
