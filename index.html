@@ -325,6 +325,61 @@
         </div>
     </div>
 
+        <!-- ЭКРАН ДЕТАЛЬНОЙ КАРТОЧКИ РЕЛИЗА (как в RYM) -->
+    <div class="full-player" id="release-modal" style="background: var(--bg-body); z-index: 550;">
+        <!-- Шапка с кнопкой закрытия -->
+        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+            <button class="icon-btn" onclick="closeReleaseDetails()" style="font-size:26px;">⌄</button>
+            <span style="font-size:12px; color:var(--text-sub); letter-spacing:1px;">ИНФОРМАЦИЯ О РЕЛИЗЕ</span>
+            <div style="width:26px;"></div>
+        </div>
+
+        <!-- Контент (скроллится) -->
+        <div style="flex:1; width:100%; overflow-y:auto; padding-bottom: 20px;">
+            <!-- Обложка и заголовок -->
+            <div style="display:flex; gap:16px; margin-bottom: 20px; align-items: flex-end;">
+                <img id="rel-cover" src="" style="width: 120px; height: 120px; border-radius: 8px; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+                <div style="flex:1; min-width:0;">
+                    <div id="rel-type" style="font-size:11px; color:var(--text-sub); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Альбом</div>
+                    <h1 id="rel-title" style="margin: 0 0 4px; font-size: 20px; line-height: 1.2;">Название</h1>
+                    <div id="rel-artist" style="font-size: 15px; color: var(--accent); font-weight: bold; margin-bottom: 8px;">Артист</div>
+                    <div id="rel-genre" style="font-size: 12px; color: var(--text-sub);">Жанр</div>
+                </div>
+            </div>
+
+            <!-- Оценка и Статус -->
+            <div style="display:flex; gap:10px; margin-bottom: 20px;">
+                <div style="flex:1; background: var(--bg-card); padding: 10px; border-radius: 10px; text-align: center; border: 1px solid var(--border);">
+                    <div style="font-size: 10px; color: var(--text-sub); margin-bottom: 4px;">ОЦЕНКА</div>
+                    <div id="rel-score" style="font-size: 18px; font-weight: bold; color: #f59e0b;">★ 0/10</div>
+                </div>
+                <div style="flex:1; background: var(--bg-card); padding: 10px; border-radius: 10px; text-align: center; border: 1px solid var(--border);">
+                    <div style="font-size: 10px; color: var(--text-sub); margin-bottom: 4px;">СТАТУС</div>
+                    <div id="rel-status" style="font-size: 14px; font-weight: bold;">В планах</div>
+                </div>
+            </div>
+
+            <!-- Ссылки на сервисы -->
+            <div style="margin-bottom: 20px;">
+                <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 8px; font-weight: bold;">СЛУШАТЬ НА:</div>
+                <div style="display:flex; gap: 8px; flex-wrap: wrap;" id="rel-links">
+                    <!-- Ссылки будут генерироваться в JS -->
+                </div>
+            </div>
+
+            <!-- Рецензия -->
+            <div style="margin-bottom: 20px;">
+                <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 8px; font-weight: bold;">ВАША РЕЦЕНЗИЯ:</div>
+                <div id="rel-review" style="background: var(--bg-card); padding: 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 13px; line-height: 1.5; white-space: pre-wrap;">
+                    Вы еще не написали рецензию...
+                </div>
+            </div>
+            
+            <!-- Кнопка редактирования -->
+            <button class="btn-accent" style="width: 100%; padding: 12px; border-radius: 12px; font-size: 14px;" onclick="editNoteFromDetails()">✏️ Редактировать карточку</button>
+        </div>
+    </div>
+    
     <div class="modal" id="video-modal">
         <div class="modal-card">
             <h3 style="margin-top:0;">Добавить ВК Видео</h3>
