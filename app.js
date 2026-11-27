@@ -295,6 +295,9 @@ function renderNotesList() {
         dl.onclick = function(e) { e.stopPropagation(); deleteNote(x.id); };
         act.appendChild(dl);
         d.appendChild(act); box.appendChild(d);
+        d.onclick = function() { openReleaseDetails(x.id); };
+
+        box.appendChild(d);
     });
 }
 
@@ -654,6 +657,81 @@ function syncFromBot() {
         console.error(e);
     });
 }
+// --- ЭКРАН ДЕТАЛЬНОЙ КАРТОЧКИ ---
+var currentReleaseId = null;
 
+function openReleaseDetails(id) {
+    var item = savedTracks.find(function(t) { return String(t.id) === String(id); });
+    if (!item) return;
+    
+    currentReleaseId = id;
+    
+    // Заполняем данные
+    document.getElementById('rel-cover').src = item.cover || defaultCover;
+    document.getElementById('rel-title').textContent = cleanName(item.title);
+    document.getElementById('rel-artist').textContent = item.artist || 'Неизвестный исполнитель';
+    document.getElementById('rel-genre').textContent = item.tags || 'Жанр не указан';
+    
+    // Оценка и статус
+    var scoreEl = document.getElementById('rel-score');
+    if (item.score) {
+        scoreEl.textContent = '★ ' + item.score + '/10';
+        scoreEl.style.color = '#f59e0b'; // Золотой цвет
+    } else {
+        scoreEl.textContent = 'Без оценки';
+        scoreEl.style.color = 'var(--text-sub)';
+    }
+    
+    var stKey = item.status || (item.done ? 'done' : 'plan');
+    var stObj = statusMap[stKey] || statusMap.plan;
+    document.getElementById('rel-status').textContent = stObj.label;
+    document.getElementById('rel-status').style.color = stObj.color;
+    
+    // Рецензия
+    var reviewEl = document.getElementById('rel-review');
+    if (item.review) {
+        reviewEl.textContent = item.review;
+        reviewEl.style.fontStyle = 'normal';
+    } else {
+        reviewEl.textContent = 'Вы еще не написали рецензию...';
+        reviewEl.style.fontStyle = 'italic';
+        reviewEl.style.color = 'var(--text-sub)';
+    }
+
+    // Генерируем ссылки для поиска
+    var query = encodeURIComponent((item.artist ? item.artist + ' ' : '') + cleanName(item.title));
+    var linksContainer = document.getElementById('rel-links');
+    linksContainer.innerHTML = ''; // Очищаем старое
+    
+    var services = [
+        { name: 'VK Музыка', icon: '🎵', url: 'https://vk.com/audio?q=' + query, color: '#0077FF' },
+        { name: 'Яндекс', icon: '🔔', url: 'https://music.yandex.ru/search?text=' + query, color: '#FFCC00' },
+        { name: 'YouTube', icon: '▶️', url: 'https://music.youtube.com/search?q=' + query, color: '#FF0000' },
+        { name: 'Spotify', icon: '🟢', url: 'https://open.spotify.com/search/' + query, color: '#1DB954' }
+    ];
+
+    services.forEach(function(s) {
+        var a = document.createElement('a');
+        a.href = s.url;
+        a.target = '_blank';
+        a.style.cssText = 'display:flex; align-items:center; gap:6px; background: var(--bg-card); padding: 8px 12px; border-radius: 8px; text-decoration: none; color: var(--text-main); font-size: 12px; font-weight: bold; border: 1px solid var(--border);';
+        a.innerHTML = '<span>' + s.icon + '</span> ' + s.name;
+        // При клике не открываем саму карточку еще раз
+        a.onclick = function(e) { e.stopPropagation(); };
+        linksContainer.appendChild(a);
+    });
+
+    // Показываем экран
+    document.getElementById('release-modal').classList.add('open');
+}
+
+function closeReleaseDetails() {
+    document.getElementById('release-modal').classList.remove('open');
+}
+
+function editNoteFromDetails() {
+    closeReleaseDetails();
+    editNote(currentReleaseId);
+}
 
 init();
