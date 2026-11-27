@@ -149,6 +149,10 @@ function editNote(id) {
     document.getElementById('note-link').value = item.url || '';
     document.getElementById('note-cover').value = item.cover || '';
     document.getElementById('note-modal').style.display = 'flex';
+     // ДОБАВЛЕНА СТРОКА ДЛЯ РЕЦЕНЗИИ:
+    document.getElementById('note-review').value = item.review || '';
+    
+    document.getElementById('note-modal').style.display = 'flex';
 }
 
 function saveNote() {
@@ -156,11 +160,21 @@ function saveNote() {
     var status = document.getElementById('note-status').value, score = document.getElementById('note-score').value;
     var tag = document.getElementById('note-tag').value.trim(), link = document.getElementById('note-link').value.trim();
     var cover = document.getElementById('note-cover').value;
+     // ДОБАВЛЕНА СТРОКА ДЛЯ РЕЦЕНЗИИ:
+    var review = document.getElementById('note-review').value.trim();
+    
     if (!name) { alert('Введи имя артиста или название!'); return; }
+    
     if (editId) {
-        savedTracks.forEach(function(t) { if (String(t.id) === String(editId)) { t.title = name; t.status = status; t.score = score; t.artist = tag; t.url = link; t.cover = cover; } });
+        savedTracks.forEach(function(t) { 
+            if (String(t.id) === String(editId)) { 
+                t.title = name; t.status = status; t.score = score; t.artist = tag; t.url = link; t.cover = cover; 
+                t.review = review; // <-- СОХРАНЯЕМ РЕЦЕНЗИЮ ТУТ
+            } 
+        });
     } else {
-        savedTracks.unshift({ id: Date.now(), type: 'note', title: name, status: status, score: score, artist: tag, pl: 'notes', url: link, cover: cover });
+        // СОХРАНЯЕМ РЕЦЕНЗИЮ ТУТ
+        savedTracks.unshift({ id: Date.now(), type: 'note', title: name, status: status, score: score, artist: tag, pl: 'notes', url: link, cover: cover, review: review });
     }
     saveCloudTracks(); tracks = myMusic.concat(savedTracks); closeNoteModal(); renderNotesList();
 }
@@ -669,7 +683,7 @@ function openReleaseDetails(id) {
     document.getElementById('rel-cover').src = item.cover || defaultCover;
     document.getElementById('rel-title').textContent = cleanName(item.title);
     document.getElementById('rel-artist').textContent = item.artist || 'Неизвестный исполнитель';
-    document.getElementById('rel-genre').textContent = item.tags || 'Жанр не указан';
+    document.getElementById('rel-genre').textContent = item.artist || 'Жанр не указан';
     
     // Оценка и статус
     var scoreEl = document.getElementById('rel-score');
