@@ -97,27 +97,7 @@ function switchTab(tab) {
     
     if (tab === 'home') renderHomePage();
     else renderCurrentTab();
-}
-function switchTab(tab) {
-    activeTab = tab;
-    var tabs = ['home', 'media', 'notes', 'settings'];
-    tabs.forEach(function(t) {
-        var el = document.getElementById('tab-' + t);
-        if (el) el.style.display = (t === tab) ? 'block' : 'none';
-        var navEl = document.getElementById('nav-' + t);
-        if (navEl) navEl.classList.toggle('active', t === tab);
-    });
 
-    if (tab === 'settings') renderProfile();
-
-    var titles = { home: 'Главная', media: 'Медиа', notes: 'Артисты и заметки', settings: 'Настройки' };
-    document.getElementById('page-title').innerText = titles[tab] || 'FXMusic';
-    document.getElementById('header-btns').style.display = (tab === 'settings' || tab === 'home') ? 'none' : 'flex';
-    document.getElementById('search-wrap').classList.remove('open');
-    document.getElementById('search-input').value = '';
-    
-    if (tab === 'home') renderHomePage();
-    else renderCurrentTab();
 }
 
 function toggleSearch() {
