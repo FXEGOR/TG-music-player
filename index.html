@@ -18,6 +18,18 @@
         .search-wrap { display: none; margin-bottom: 12px; }
         .search-wrap.open { display: block; }
         .search-box { width: 100%; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main); font-size: 14px; outline: none; }
+        
+        /* Стили Главной */
+        .home-section { margin-bottom: 24px; }
+        .home-title { font-size: 16px; font-weight: 700; margin: 0 0 12px 0; }
+        .home-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
+        .home-scroll::-webkit-scrollbar { display: none; }
+        .home-card { min-width: 120px; max-width: 120px; background: var(--bg-card); border-radius: 10px; padding: 8px; text-align: center; cursor: pointer; border: 1px solid var(--border); }
+        .home-card img { width: 100%; aspect-ratio: 1/1; border-radius: 8px; object-fit: cover; margin-bottom: 8px; }
+        .home-card .h-title { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .home-card .h-sub { font-size: 10px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* Медиа и Заметки */
         .vmp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
         .vmp-card { position: relative; overflow: hidden; border-radius: 14px; padding: 14px; height: 74px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; border: 1px solid rgba(255,255,255,0.06); }
         .vmp-card .v-title { font-weight: 700; font-size: 15px; z-index: 2; color: #fff; }
@@ -32,27 +44,23 @@
         .track-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; background: var(--bg-card); border: 1px solid transparent; cursor: pointer; }
         .track-item.active { border-color: var(--accent); }
         .items-list.grid-view .track-item { flex-direction: column; align-items: flex-start; justify-content: space-between; min-height: 110px; }
-        .t-img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: #2a2a2a; flex-shrink: 0; }
-        
-        /* Стили для Главного экрана */
-        .home-section { margin-bottom: 24px; }
-        .home-title { font-size: 16px; font-weight: 700; margin: 0 0 12px 0; }
-        .home-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
-        .home-scroll::-webkit-scrollbar { display: none; }
-        .home-card { min-width: 120px; max-width: 120px; background: var(--bg-card); border-radius: 10px; padding: 8px; text-align: center; cursor: pointer; border: 1px solid var(--border); }
-        .home-card img { width: 100%; aspect-ratio: 1/1; border-radius: 8px; object-fit: cover; margin-bottom: 8px; }
-        .home-card .h-title { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .home-card .h-sub { font-size: 10px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        /* Стили для обложек в режиме сетки */
         .items-list.grid-view .note-cover-img { width: 100%; height: auto; aspect-ratio: 1 / 1; border-radius: 8px; margin-bottom: 8px; object-fit: cover; }
         .items-list.grid-view .track-item { padding: 10px; box-sizing: border-box; }
-        
+        .t-img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: #2a2a2a; flex-shrink: 0; }
+
+        /* Настройки */
         .set-group { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
         .set-title { font-size: 13px; color: var(--text-sub); margin: 0 0 10px; font-weight: 600; }
         .seg-row { display: flex; gap: 8px; }
         .seg-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-body); color: var(--text-main); font-size: 13px; cursor: pointer; text-align: center; }
         .seg-btn.active { border-color: var(--accent); color: var(--accent); font-weight: bold; }
+        .profile-card { display: flex; align-items: center; gap: 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+        .profile-avatar { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; background: #333; flex-shrink: 0; }
+        .profile-info { flex: 1; min-width: 0; }
+        .profile-name { font-size: 16px; font-weight: 700; margin: 0 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .profile-stats { font-size: 12px; color: var(--text-sub); }
+
+        /* Плеер и нижнее меню */
         .mini-player { display: none; position: fixed; bottom: 66px; left: 10px; right: 10px; max-width: 460px; margin: 0 auto; background: var(--bg-bar); border: 1px solid var(--border); border-radius: 12px; padding: 8px 12px; align-items: center; gap: 10px; z-index: 90; }
         .mini-player.visible { display: flex; }
         .mini-cover { width: 38px; height: 38px; border-radius: 6px; object-fit: cover; }
@@ -65,6 +73,8 @@
         .tab-item { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--text-sub); font-size: 11px; cursor: pointer; border: none; background: none; }
         .tab-item.active { color: var(--accent); font-weight: 600; }
         .tab-icon { font-size: 20px; }
+
+        /* Фулл-плеер и Карточка RYM */
         .full-player { display: none; position: fixed; inset: 0; background: linear-gradient(180deg, var(--bg-bar) 0%, var(--bg-body) 100%); z-index: 500; flex-direction: column; padding: 20px 24px 32px; align-items: center; justify-content: space-between; }
         .full-player.open { display: flex; }
         .big-cover { width: 100%; max-width: 290px; aspect-ratio: 1/1; border-radius: 16px; object-fit: cover; }
@@ -74,18 +84,13 @@
         .play-circle { background: var(--accent); color: #000; width: 60px; height: 60px; border-radius: 50%; border: none; font-size: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .yt-box { display: none; width: 100%; aspect-ratio: 16 / 9; margin-bottom: 14px; border-radius: 12px; overflow: hidden; background: #000; }
         .yt-box iframe { width: 100%; height: 100%; border: none; }
+
+        /* Модалки */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 600; align-items: center; justify-content: center; padding: 16px; }
         .modal-card { background: var(--bg-card); border: 1px solid var(--border); padding: 18px; border-radius: 16px; width: 100%; max-width: 400px; }
-        .modal-card input, .modal-card select { width: 100%; padding: 10px 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-body); color: var(--text-main); font-size: 14px; }
+        .modal-card input, .modal-card select, .modal-card textarea { width: 100%; padding: 10px 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-body); color: var(--text-main); font-size: 14px; }
         .btn-accent { background: var(--accent); color: #000; border: none; padding: 9px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 13px; }
         .btn-dark { background: var(--bg-body); color: var(--text-main); border: 1px solid var(--border); padding: 9px 14px; border-radius: 20px; cursor: pointer; font-size: 13px; }
-        
-        /* Стили для карточки профиля */
-        .profile-card { display: flex; align-items: center; gap: 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
-        .profile-avatar { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; background: #333; flex-shrink: 0; }
-        .profile-info { flex: 1; min-width: 0; }
-        .profile-name { font-size: 16px; font-weight: 700; margin: 0 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .profile-stats { font-size: 12px; color: var(--text-sub); }
     </style>
 </head>
 <body>
@@ -104,10 +109,6 @@
 
     <!-- ГЛАВНАЯ -->
     <div id="tab-home">
-                <div class="home-section">
-            <h3 class="home-title">Глобальные миксы</h3>
-            <div class="home-scroll" id="home-global-mixes"></div>
-        </div>
         <div class="home-section">
             <h3 class="home-title">Новые релизы</h3>
             <div class="home-scroll" id="home-new-releases"></div>
@@ -135,10 +136,7 @@
             </div>
             <div id="home-playlists" class="items-list"></div>
         </div>
-    <div class="home-section">
-    <h3 class="home-title">Глобальные миксы</h3>
-    <div class="home-scroll" id="home-global-mixes"></div>
-</div>
+    </div>
 
     <!-- МЕДИА -->
     <div id="tab-media" style="display:none;">
@@ -177,17 +175,16 @@
             </div>
         </div>
 
-                <div class="set-group">
+        <div class="set-group">
             <p class="set-title">Подключение аккаунта VK</p>
             <div id="vk-auth-container"></div>
-            
             <script src="https://unpkg.com/@vkid/sdk@latest/dist-sdk/umd/index.js"></script>
             <script type="text/javascript">
               if ('VKIDSDK' in window) {
                 const VKID = window.VKIDSDK;
                 VKID.Config.init({
                   app: 54924266,
-                  redirectUrl: 'https://FXEGOR.pythonanywhere.com/api/vk_callback', // Оставляем, VK требует этот адрес
+                  redirectUrl: 'https://FXEGOR.pythonanywhere.com/api/vk_callback',
                   responseMode: VKID.ConfigResponseMode.Callback,
                   source: VKID.ConfigSource.LOWCODE,
                   scope: '',
@@ -202,32 +199,18 @@
                 .on(VKID.OAuthListInternalEvents.LOGIN_SUCCESS, function (payload) {
                   const code = payload.code;
                   const deviceId = payload.device_id;
-                  
-                  // --- НОВАЯ ЛОГИКА ТУТ ---
-                  // Меняем код на токен прямо в браузере
                   VKID.Auth.exchangeCode(code, deviceId)
                     .then(function(data) {
-                        console.log("Успешный вход VK!", data);
-                        
-                        // Отправляем уже ГОТОВЫЙ ТОКЕН на наш сервер
                         var tgId = (window.Telegram && Telegram.WebApp.initDataUnsafe.user) ? Telegram.WebApp.initDataUnsafe.user.id : 'guest';
-                        
                         fetch('https://FXEGOR.pythonanywhere.com/api/vk_token', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ 
-                                tg_id: tgId, 
-                                vk_token: data.access_token, 
-                                vk_user_id: data.user_id 
-                            })
+                            body: JSON.stringify({ tg_id: tgId, vk_token: data.access_token, vk_user_id: data.user_id })
                         })
                         .then(res => res.json())
                         .then(res => {
-                            if(res.status === 'ok') {
-                                alert('✅ Аккаунт VK успешно привязан!');
-                            } else {
-                                alert('Ошибка сохранения на сервере');
-                            }
+                            if(res.status === 'ok') alert('✅ Аккаунт VK успешно привязан!');
+                            else alert('Ошибка сохранения на сервере');
                         })
                         .catch(err => console.error("Ошибка сети:", err));
                     })
@@ -235,35 +218,22 @@
                         console.error("Ошибка VK ID:", error);
                         alert('Ошибка VK: ' + error.message);
                     });
-                  // -----------------------
-               });
-                                  // ... (твой существующий код с oAuth.render) ...
-
-                // НОВЫЙ БЛОК: Ловим код из всплывающего окна
+                });
                 window.addEventListener('message', function(event) {
                     if (event.data && event.data.type === 'VK_AUTH_CODE') {
                         const code = event.data.code;
-                        console.log("Получен код из окна VK:", code);
-                        
-                        // Обмениваем код на токен в браузере
                         VKID.Auth.exchangeCode(code, '')
                             .then(function(data) {
                                 var tgId = (window.Telegram && Telegram.WebApp.initDataUnsafe.user) ? Telegram.WebApp.initDataUnsafe.user.id : 'guest';
-                                
                                 fetch('https://FXEGOR.pythonanywhere.com/api/vk_token', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ tg_id: tgId, vk_token: data.access_token, vk_user_id: data.user_id })
                                 })
                                 .then(res => res.json())
-                                .then(res => {
-                                    if(res.status === 'ok') alert('✅ Аккаунт VK успешно привязан!');
-                                });
+                                .then(res => { if(res.status === 'ok') alert('✅ Аккаунт VK успешно привязан!'); });
                             })
-                            .catch(function(error) {
-                                console.error("Ошибка VK:", error);
-                                alert('Ошибка VK: ' + error.message);
-                            });
+                            .catch(function(error) { console.error("Ошибка VK:", error); });
                     }
                 });
               }
@@ -296,7 +266,7 @@
             <div><div style="font-size:14px; font-weight:600;">Обратная связь</div><div style="font-size:12px; color:var(--text-sub); margin-top:2px;">Автор проекта в Telegram</div></div>
             <a href="https://t.me/FXEGOR" target="_blank" class="btn-accent" style="text-decoration:none;">@FXEGOR</a>
         </div>
-        <div style="text-align:center; color:var(--text-sub); font-size:12px; margin-top:16px;">Версия интерфейса: v=2.1</div>
+        <div style="text-align:center; color:var(--text-sub); font-size:12px; margin-top:16px;">Версия интерфейса: v=2.2</div>
     </div>
 
     <!-- НИЖНЕЕ МЕНЮ -->
@@ -307,7 +277,7 @@
         <button class="tab-item" id="nav-settings" onclick="switchTab('settings')"><span class="tab-icon">⚙️</span><span>Настройки</span></button>
     </div>
 
-    <!-- ПЛЕЕР И МОДАЛКИ (без изменений) -->
+    <!-- ПЛЕЕР -->
     <div class="mini-player" id="mini-player">
         <img id="mini-cover" class="mini-cover" src="" onclick="openFull()">
         <div class="mini-info" onclick="openFull()"><div class="mini-title" id="mini-title">Трек</div><div class="mini-sub" id="mini-time">0:00</div></div>
@@ -336,20 +306,14 @@
         </div>
     </div>
 
-         <!-- ЭКРАН ДЕТАЛЬНОЙ КАРТОЧКИ РЕЛИЗА (как в RYM) -->
-    <div class="full-player" id="release-modal" style="background: var(--bg-body); z-index: 550; display: none;">
-        <!-- Шапка с кнопкой закрытия -->
+    <!-- КАРТОЧКА RYM -->
+    <div class="full-player" id="release-modal" style="background: var(--bg-body); z-index: 550;">
         <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
-            <button id="rel-action-btn" class="btn-accent" style="width: 100%; padding: 12px; border-radius: 12px; font-size: 14px; border: 1px solid var(--border); cursor: pointer;">
-    ✏️ Редактировать карточку
-</button>
+            <button class="icon-btn" onclick="closeReleaseDetails()" style="font-size:26px;">⌄</button>
             <span style="font-size:12px; color:var(--text-sub); letter-spacing:1px;">ИНФОРМАЦИЯ О РЕЛИЗЕ</span>
             <div style="width:26px;"></div>
         </div>
-
-        <!-- Контент (скроллится) -->
         <div style="flex:1; width:100%; overflow-y:auto; padding-bottom: 20px;">
-            <!-- Обложка и заголовок -->
             <div style="display:flex; gap:16px; margin-bottom: 20px; align-items: flex-end;">
                 <img id="rel-cover" src="" style="width: 120px; height: 120px; border-radius: 8px; object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
                 <div style="flex:1; min-width:0;">
@@ -359,8 +323,6 @@
                     <div id="rel-genre" style="font-size: 12px; color: var(--text-sub);">Жанр</div>
                 </div>
             </div>
-
-            <!-- Оценка и Статус -->
             <div style="display:flex; gap:10px; margin-bottom: 20px;">
                 <div style="flex:1; background: var(--bg-card); padding: 10px; border-radius: 10px; text-align: center; border: 1px solid var(--border);">
                     <div style="font-size: 10px; color: var(--text-sub); margin-bottom: 4px;">ОЦЕНКА</div>
@@ -371,27 +333,19 @@
                     <div id="rel-status" style="font-size: 14px; font-weight: bold;">В планах</div>
                 </div>
             </div>
-
-            <!-- Ссылки на сервисы -->
             <div style="margin-bottom: 20px;">
                 <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 8px; font-weight: bold;">СЛУШАТЬ НА:</div>
-                <div style="display:flex; gap: 8px; flex-wrap: wrap;" id="rel-links">
-                    <!-- Ссылки будут генерироваться в JS -->
-                </div>
+                <div style="display:flex; gap: 8px; flex-wrap: wrap;" id="rel-links"></div>
             </div>
-
-            <!-- Рецензия -->
             <div style="margin-bottom: 20px;">
                 <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 8px; font-weight: bold;">ВАША РЕЦЕНЗИЯ:</div>
-                <div id="rel-review" style="background: var(--bg-card); padding: 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 13px; line-height: 1.5; white-space: pre-wrap;">
-                    Вы еще не написали рецензию...
-                </div>
+                <div id="rel-review" style="background: var(--bg-card); padding: 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 13px; line-height: 1.5; white-space: pre-wrap;">Вы еще не написали рецензию...</div>
             </div>
-            
-                       <!-- Кнопка редактирования -->
-            <button id="rel-action-btn" class="btn-accent" style="width: 100%; padding: 12px; border-radius: 12px; font-size: 14px; border: 1px solid var(--border); cursor: pointer;" onclick="editNoteFromDetails()">✏️ Редактировать карточку</button>
-          </div>
+            <button id="rel-action-btn" class="btn-accent" style="width: 100%; padding: 12px; border-radius: 12px; font-size: 14px; border: 1px solid var(--border); cursor: pointer;">✏️ Редактировать карточку</button>
+        </div>
     </div>
+    
+    <!-- МОДАЛКИ -->
     <div class="modal" id="video-modal">
         <div class="modal-card">
             <h3 style="margin-top:0;">Добавить ВК Видео</h3>
@@ -418,10 +372,7 @@
             </div>
             <input type="text" id="note-tag" placeholder="Жанр или тег (пост-панк, мейдкор...)">
             <input type="text" id="note-link" placeholder="Ссылка на ВК, ТГ или YouTube">
-            
-            <!-- ВОТ ТО САМОЕ ПОЛЕ ДЛЯ РЕЦЕНЗИИ -->
-            <textarea id="note-review" placeholder="Напиши свою рецензию на этот релиз..." style="width: 100%; height: 80px; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-body); color: var(--text-main); font-family: inherit; font-size: 14px; margin-bottom: 10px; resize: vertical;"></textarea>
-
+            <textarea id="note-review" placeholder="Напиши свою рецензию на этот релиз..." style="height: 80px; resize: vertical;"></textarea>
             <div style="display:flex; gap:10px; justify-content:flex-end;">
                 <button class="btn-dark" onclick="closeNoteModal()">Отмена</button>
                 <button class="btn-accent" onclick="saveNote()">Сохранить</button>
@@ -432,6 +383,6 @@
     <audio id="audio"></audio>
     <script src="https://vk.com/js/api/openapi.js?169"></script>
     <script src="tracks.js"></script>
-    <script src="app.js?v=205"></script>
+    <script src="app.js?v=206"></script>
 </body>
 </html>
