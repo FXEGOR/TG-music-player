@@ -1,4 +1,13 @@
 var customMusic = [
+   {
+        type: 'yt',
+        title: 'Лучшие миксы Фонка',
+        artist: 'Разное',
+        pl: 'youtube', // <-- ВАЖНО: это привяжет микс к плитке "ВК Видео"
+        ytId: '-12345678_456239017',
+        custom: false 
+    }
+],
   {
     "type": "audio",
     "title": [
