@@ -674,10 +674,113 @@ function syncFromBot() {
 var currentReleaseId = null;
 
 function openReleaseDetails(id) {
-    var item = savedTracks.find(function(t) { return String(t.id) === String(id); });
+    // --- ЭКРАН ДЕТАЛЬНОЙ КАРТОЧКИ ---
+var currentReleaseId = null;
+var isPreviewMode = false; // Новая переменная для предпросмотра
+
+function openReleaseDetails(id, customItem, isPreview) {
+    var item = customItem;
+    
+    // Если это не предпросмотр (а обычный клик по заметке), ищем в сохраненных
+    if (!item) {
+        item = savedTracks.find(function(t) { return String(t.id) === String(id); });
+    }
     if (!item) return;
     
+    // ЭТА СТРОКА ОСТАЕТСЯ (нужна для кнопки "Редактировать")
     currentReleaseId = id;
+    isPreviewMode = isPreview || false;
+    
+    // Заполняем данные
+    document.getElementById('rel-cover').src = item.cover || defaultCover;
+    document.getElementById('rel-title').textContent = cleanName(item.title);
+    document.getElementById('rel-artist').textContent = item.artist || 'Жанр не указан';
+    document.getElementById('rel-genre').textContent = item.tags || ''; 
+    
+    // Оценка и статус
+    var scoreEl = document.getElementById('rel-score');
+    if (item.score) {
+        scoreEl.textContent = '★ ' + item.score + '/10';
+        scoreEl.style.color = '#f59e0b';
+    } else {
+        scoreEl.textContent = 'Без оценки';
+        scoreEl.style.color = 'var(--text-sub)';
+    }
+    
+    var stKey = item.status || (item.done ? 'done' : 'plan');
+    var stObj = statusMap[stKey] || statusMap.plan;
+    document.getElementById('rel-status').textContent = stObj.label;
+    document.getElementById('rel-status').style.color = stObj.color;
+    
+    // Рецензия
+    var reviewEl = document.getElementById('rel-review');
+    if (item.review) {
+        reviewEl.textContent = item.review;
+        reviewEl.style.fontStyle = 'normal';
+        reviewEl.style.color = 'var(--text-main)';
+    } else {
+        reviewEl.textContent = 'Вы еще не написали рецензию...';
+        reviewEl.style.fontStyle = 'italic';
+        reviewEl.style.color = 'var(--text-sub)';
+    }
+
+    // --- НОВЫЙ БЛОК ССЫЛОК ---
+    var qTitle = cleanName(item.title);
+    if (item.artist && qTitle.toLowerCase().includes(item.artist.toLowerCase())) {
+        qTitle = qTitle.replace(new RegExp(item.artist, 'ig'), '').replace(/^- /, '').trim();
+    }
+    
+    var query = encodeURIComponent((item.artist ? item.artist + ' ' : '') + qTitle);
+    var linksContainer = document.getElementById('rel-links');
+    linksContainer.innerHTML = ''; 
+    
+    var services = [
+        { name: 'Apple Music', icon: '🍎', url: item.url, color: '#FA243C' },
+        { name: 'VK Музыка', icon: '🎵', url: 'https://vk.com/audio?q=' + query, color: '#0077FF' },
+        { name: 'Яндекс', icon: '🔔', url: 'https://music.yandex.ru/search?text=' + query, color: '#FFCC00' },
+        { name: 'YouTube', icon: '▶️', url: 'https://music.youtube.com/search?q=' + query, color: '#FF0000' },
+        { name: 'Spotify', icon: '🟢', url: 'https://open.spotify.com/search/' + query, color: '#1DB954' }
+    ];
+
+    services.forEach(function(s) {
+        if (!s.url) return; 
+        var a = document.createElement('a');
+        a.href = s.url;
+        a.target = '_blank';
+        a.style.cssText = 'display:flex; align-items:center; gap:6px; background: var(--bg-card); padding: 8px 12px; border-radius: 8px; text-decoration: none; color: var(--text-main); font-size: 12px; font-weight: bold; border: 1px solid var(--border); transition: 0.2s;';
+        a.onmouseover = function() { a.style.borderColor = s.color; };
+        a.onmouseout = function() { a.style.borderColor = 'var(--border)'; };
+        a.innerHTML = '<span>' + s.icon + '</span> ' + s.name;
+        a.onclick = function(e) { e.stopPropagation(); };
+        linksContainer.appendChild(a);
+    });
+
+    // --- НОВАЯ ЛОГИКА КНОПКИ ВНИЗУ ---
+    var actionBtn = document.getElementById('rel-action-btn');
+    if (isPreviewMode) {
+        // Если открыто с Главной страницы
+        actionBtn.innerHTML = '➕ Добавить в библиотеку';
+        actionBtn.style.background = 'var(--accent)';
+        actionBtn.style.color = '#000';
+        actionBtn.onclick = function() {
+            closeReleaseDetails();
+            openNoteModal(); 
+            document.getElementById('note-name').value = item.title;
+            document.getElementById('note-tag').value = item.artist;
+            document.getElementById('note-cover').value = item.cover;
+            document.getElementById('note-link').value = item.url;
+        };
+    } else {
+        // Если открыто из Заметок
+        actionBtn.innerHTML = '✏️ Редактировать карточку';
+        actionBtn.style.background = 'transparent';
+        actionBtn.style.color = 'var(--text-main)';
+        actionBtn.onclick = function() { editNoteFromDetails(); };
+    }
+
+    // Показываем экран
+    document.getElementById('release-modal').classList.add('open');
+}
     
     // Заполняем данные
     document.getElementById('rel-cover').src = item.cover || defaultCover;
