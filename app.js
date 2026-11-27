@@ -492,11 +492,22 @@ function fetchITunes(query, entity, containerId) {
             var card = document.createElement('div');
             card.className = 'home-card';
             card.innerHTML = '<img src="' + cover + '"><div class="h-title">' + title + '</div><div class="h-sub">' + sub + '</div>';
-            card.onclick = function() {
-                openNoteModal();
-                document.getElementById('note-name').value = item.collectionName ? (item.artistName + ' - ' + item.collectionName) : item.artistName;
-                document.getElementById('note-tag').value = item.primaryGenreName || '';
-                document.getElementById('note-cover').value = cover;
+                        card.onclick = function() {
+                // Формируем объект, похожий на нашу заметку, для предпросмотра
+                var previewItem = {
+                    id: 'preview_' + Date.now(), // Временный ID
+                    type: 'note',
+                    title: item.collectionName ? (item.artistName + ' - ' + item.collectionName) : item.artistName,
+                    artist: item.primaryGenreName || 'Жанр не указан',
+                    cover: cover,
+                    url: item.collectionViewUrl || item.artistLinkUrl || '',
+                    score: '',
+                    status: 'plan',
+                    review: ''
+                };
+                // Открываем карточку в режиме предпросмотра
+                openReleaseDetails(previewItem.id, previewItem, true);
+            };
                 if (item.collectionViewUrl || item.artistLinkUrl) document.getElementById('note-link').value = item.collectionViewUrl || item.artistLinkUrl;
             };
             container.appendChild(card);
@@ -672,8 +683,21 @@ function syncFromBot() {
 }
 // --- ЭКРАН ДЕТАЛЬНОЙ КАРТОЧКИ ---
 var currentReleaseId = null;
+var isPreviewMode = false;
 
-function openReleaseDetails(id) {
+function openReleaseDetails(id, customItem = null, isPreview = false) {
+    var item = customItem;
+    
+    // Если это не предпросмотр, ищем в сохраненных
+    if (!item) {
+        item = savedTracks.find(function(t) { return String(t.id) === String(id); });
+    }
+    if (!item) return;
+    
+    currentReleaseId = id;
+    isPreviewMode = isPreview;
+    
+    // ... (тут идет заполнение rel-cover, rel-title, rel-artist, rel-genre и т.д. - оставляем как было) ...
     // --- ЭКРАН ДЕТАЛЬНОЙ КАРТОЧКИ ---
 var currentReleaseId = null;
 var isPreviewMode = false; // Новая переменная для предпросмотра
@@ -690,6 +714,28 @@ function openReleaseDetails(id, customItem, isPreview) {
     // ЭТА СТРОКА ОСТАЕТСЯ (нужна для кнопки "Редактировать")
     currentReleaseId = id;
     isPreviewMode = isPreview || false;
+
+    var actionBtn = document.getElementById('rel-action-btn');
+    
+    if (isPreview) {
+        actionBtn.innerHTML = '➕ Добавить в библиотеку';
+        actionBtn.style.background = 'var(--accent)';
+        actionBtn.style.color = '#000';
+        actionBtn.onclick = function() {
+            closeReleaseDetails();
+            openNoteModal(); // Открываем окно добавления
+            // Заполняем поля данными из предпросмотра
+            document.getElementById('note-name').value = item.title;
+            document.getElementById('note-tag').value = item.artist;
+            document.getElementById('note-cover').value = item.cover;
+            document.getElementById('note-link').value = item.url;
+        };
+    } else {
+        actionBtn.innerHTML = '✏️ Редактировать карточку';
+        actionBtn.style.background = 'transparent';
+        actionBtn.style.color = 'var(--text-main)';
+        actionBtn.onclick = function() { editNoteFromDetails(); };
+    }
     
     // Заполняем данные
     document.getElementById('rel-cover').src = item.cover || defaultCover;
