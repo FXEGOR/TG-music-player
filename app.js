@@ -557,6 +557,8 @@ function openReleaseDetails(id) {
         linksContainer.appendChild(a);
     });
 
+    var actBtn = document.getElementById('rel-action-btn');
+    if (actBtn) actBtn.onclick = editNoteFromDetails;
     document.getElementById('release-modal').classList.add('open');
 }
 
