@@ -500,7 +500,6 @@ function openPlaylistModal() {
     userPlaylists.push({ title: title, url: url, service: service });
     localStorage.setItem('fx_playlists', JSON.stringify(userPlaylists));
     renderUserPlaylists();
-}
 
 function renderProfile() {
     var nameEl = document.getElementById('prof-name');
