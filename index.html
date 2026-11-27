@@ -166,7 +166,7 @@
             </div>
         </div>
 
-        <div class="set-group">
+                <div class="set-group">
             <p class="set-title">Подключение аккаунта VK</p>
             <div id="vk-auth-container"></div>
             
@@ -176,7 +176,7 @@
                 const VKID = window.VKIDSDK;
                 VKID.Config.init({
                   app: 54924266,
-                  redirectUrl: 'https://FXEGOR.pythonanywhere.com/api/vk_callback',
+                  redirectUrl: 'https://FXEGOR.pythonanywhere.com/api/vk_callback', // Оставляем, VK требует этот адрес
                   responseMode: VKID.ConfigResponseMode.Callback,
                   source: VKID.ConfigSource.LOWCODE,
                   scope: '',
@@ -191,17 +191,40 @@
                 .on(VKID.OAuthListInternalEvents.LOGIN_SUCCESS, function (payload) {
                   const code = payload.code;
                   const deviceId = payload.device_id;
-                  fetch('https://FXEGOR.pythonanywhere.com/api/vk_callback', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ code: code, device_id: deviceId })
-                  })
-                  .then(res => res.json())
-                  .then(res => {
-                      if(res.status === 'ok') alert('Аккаунт VK успешно привязан!');
-                      else alert('Ошибка VK: ' + res.msg);
-                  })
-                  .catch(err => console.error(err));
+                  
+                  // --- НОВАЯ ЛОГИКА ТУТ ---
+                  // Меняем код на токен прямо в браузере
+                  VKID.Auth.exchangeCode(code, deviceId)
+                    .then(function(data) {
+                        console.log("Успешный вход VK!", data);
+                        
+                        // Отправляем уже ГОТОВЫЙ ТОКЕН на наш сервер
+                        var tgId = (window.Telegram && Telegram.WebApp.initDataUnsafe.user) ? Telegram.WebApp.initDataUnsafe.user.id : 'guest';
+                        
+                        fetch('https://FXEGOR.pythonanywhere.com/api/vk_token', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                tg_id: tgId, 
+                                vk_token: data.access_token, 
+                                vk_user_id: data.user_id 
+                            })
+                        })
+                        .then(res => res.json())
+                        .then(res => {
+                            if(res.status === 'ok') {
+                                alert('✅ Аккаунт VK успешно привязан!');
+                            } else {
+                                alert('Ошибка сохранения на сервере');
+                            }
+                        })
+                        .catch(err => console.error("Ошибка сети:", err));
+                    })
+                    .catch(function(error) {
+                        console.error("Ошибка VK ID:", error);
+                        alert('Ошибка VK: ' + error.message);
+                    });
+                  // -----------------------
                 });
               }
             </script>
