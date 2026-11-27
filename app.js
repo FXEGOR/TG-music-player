@@ -470,6 +470,29 @@ function renderHomePage() {
     fetchITunes('indie', 'album', 'home-recommended');
     
     renderUserPlaylists();
+    
+    function renderGlobalMixes() {
+    var box = document.getElementById('home-global-mixes');
+    if (!box) return;
+    box.innerHTML = '';
+    
+    // Берем только жестко заданные миксы из customMusic
+    var globalMixes = customMusic.filter(function(t) { return t.type === 'yt'; });
+    
+    globalMixes.forEach(function(mix) {
+        var card = document.createElement('div');
+        card.className = 'home-card';
+        // Заглушка для обложки микса
+        card.innerHTML = '<img src="' + defaultCover + '"><div class="h-title">' + mix.title + '</div><div class="h-sub">Микс</div>';
+        
+        card.onclick = function() {
+            // Тут можно либо запустить плеер, либо открыть карточку
+            currentList = [mix];
+            play(0);
+        };
+        box.appendChild(card);
+    });
+}
 }
 
 function fetchITunes(query, entity, containerId) {
