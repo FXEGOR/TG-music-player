@@ -271,7 +271,7 @@ function renderNotesList() {
             a.onclick = function(e) { e.stopPropagation(); };
             act.appendChild(a);
         }
-        var ed = document.createElement('button');
+      var ed = document.createElement('button');
         ed.innerText = '✏️'; ed.style.cssText = 'background:none; border:none; font-size:16px; padding:6px; cursor:pointer;';
         ed.onclick = function(e) { e.stopPropagation(); editNote(x.id); };
         act.appendChild(ed);
@@ -279,10 +279,7 @@ function renderNotesList() {
         dl.innerText = '✖'; dl.style.cssText = 'background:none; border:none; color:#777; font-size:16px; padding:6px; cursor:pointer;';
         dl.onclick = function(e) { e.stopPropagation(); deleteNote(x.id); };
         act.appendChild(dl);
-        
-        d.appendChild(act); 
-        d.onclick = function() { openReleaseDetails(x.id); };
-        box.appendChild(d);
+        d.appendChild(act); box.appendChild(d);
     });
 }
 
