@@ -67,7 +67,7 @@ function init() {
         grid.appendChild(d);
     });
 
-    var startTab = localStorage.getItem('fx_start_tab') || 'home'; // Теперь по умолчанию Главная
+    var startTab = localStorage.getItem('fx_start_tab') || 'media';
     updateStartButtons(startTab);
 
     loadCloudTracks(function() {
@@ -76,10 +76,11 @@ function init() {
         switchTab(startTab);
     });
 }
-// Вставьте это в самом начале кода, перед использованием функции switchTab
+
+// --- ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ---
 function switchTab(tab) {
     activeTab = tab;
-    var tabs = ['home', 'media', 'notes', 'settings'];
+    var tabs = ['media', 'notes', 'settings'];
     tabs.forEach(function(t) {
         var el = document.getElementById('tab-' + t);
         if (el) el.style.display = (t === tab) ? 'block' : 'none';
@@ -89,15 +90,13 @@ function switchTab(tab) {
 
     if (tab === 'settings') renderProfile();
 
-    var titles = { home: 'Главная', media: 'Медиа', notes: 'Артисты и заметки', settings: 'Настройки' };
+    var titles = { media: 'Медиа', notes: 'Артисты и заметки', settings: 'Настройки' };
     document.getElementById('page-title').innerText = titles[tab] || 'FXMusic';
-    document.getElementById('header-btns').style.display = (tab === 'settings' || tab === 'home') ? 'none' : 'flex';
+    document.getElementById('header-btns').style.display = (tab === 'settings') ? 'none' : 'flex';
     document.getElementById('search-wrap').classList.remove('open');
     document.getElementById('search-input').value = '';
     
-    if (tab === 'home') renderHomePage();
-    else renderCurrentTab();
-
+    renderCurrentTab();
 }
 
 function toggleSearch() {
@@ -113,6 +112,7 @@ function renderCurrentTab() {
     else if (activeTab === 'notes') renderNotesList(); 
 }
 
+// --- НАСТРОЙКИ И UI ---
 function seekAudio(val) { if (audio.duration) audio.currentTime = (val / 100) * audio.duration; }
 function fmtTime(sec) { var m = Math.floor(sec / 60), s = Math.floor(sec % 60); return m + ':' + (s < 10 ? '0' : '') + s; }
 function setTheme(t) {
@@ -127,6 +127,7 @@ function openFull() { document.getElementById('full-player').classList.add('open
 function closeFull() { document.getElementById('full-player').classList.remove('open'); }
 function openVideoModal() { document.getElementById('video-modal').style.display = 'flex'; }
 function closeVideoModal() { document.getElementById('video-modal').style.display = 'none'; }
+
 function openNoteModal() {
     document.getElementById('note-modal-title').innerText = 'Новая карточка';
     document.getElementById('note-edit-id').value = ''; document.getElementById('note-name').value = '';
@@ -137,6 +138,7 @@ function openNoteModal() {
 }
 function closeNoteModal() { document.getElementById('note-modal').style.display = 'none'; }
 
+// --- ЗАМЕТКИ ---
 function editNote(id) {
     var item = savedTracks.find(function(t) { return String(t.id) === String(id); });
     if (!item) return;
@@ -186,6 +188,7 @@ function saveYtVideo() {
     closeVideoModal(); selectMediaSection(currentPl, document.getElementById('media-sub-title').innerText);
 }
 
+// --- МЕДИА ---
 function selectMediaSection(id, name) {
     currentPl = id;
     document.getElementById('media-sub-title').innerText = name;
@@ -271,7 +274,7 @@ function renderNotesList() {
             a.onclick = function(e) { e.stopPropagation(); };
             act.appendChild(a);
         }
-      var ed = document.createElement('button');
+        var ed = document.createElement('button');
         ed.innerText = '✏️'; ed.style.cssText = 'background:none; border:none; font-size:16px; padding:6px; cursor:pointer;';
         ed.onclick = function(e) { e.stopPropagation(); editNote(x.id); };
         act.appendChild(ed);
@@ -279,10 +282,14 @@ function renderNotesList() {
         dl.innerText = '✖'; dl.style.cssText = 'background:none; border:none; color:#777; font-size:16px; padding:6px; cursor:pointer;';
         dl.onclick = function(e) { e.stopPropagation(); deleteNote(x.id); };
         act.appendChild(dl);
-        d.appendChild(act); box.appendChild(d);
+        
+        d.appendChild(act); 
+        d.onclick = function() { openReleaseDetails(x.id); };
+        box.appendChild(d);
     });
 }
 
+// --- ПЛЕЕР ---
 function play(i) {
     idx = i;
     var x = currentList[idx];
@@ -336,6 +343,7 @@ audio.addEventListener('timeupdate', function() {
     document.getElementById('big-cur').innerText = c; document.getElementById('big-dur').innerText = d;
 });
 
+// --- ПОИСК ITUNES ---
 var searchTimer = null;
 var apiBase = atob('aHR0cHM6Ly9pdHVuZXMuYXBwbGUuY29tL3NlYXJjaD90ZXJtPQ==');
 function searchCatalog(q) {
@@ -376,129 +384,7 @@ function searchCatalog(q) {
     }, 400);
 }
 
-var homeDataLoaded = false;
-
-function renderHomePage() {
-    if (homeDataLoaded) return;
-    homeDataLoaded = true;
-    
-    fetchITunes('new', 'album', 'home-new-releases');
-    fetchITunes('top', 'musicArtist', 'home-top-artists');
-    fetchITunes('hits', 'album', 'home-top-albums');
-    fetchITunes('indie', 'album', 'home-recommended');
-    
-    renderUserPlaylists();
-    renderGlobalMixes();
-}
-
-function fetchITunes(query, entity, containerId) {
-    var url = 'https://itunes.apple.com/search?term=' + encodeURIComponent(query) + '&entity=' + entity + '&limit=10&country=ru';
-    var container = document.getElementById(containerId);
-    if (!container) return;
-    container.innerHTML = '<div style="color:var(--text-sub); font-size:12px;">Загрузка...</div>';
-
-    fetch(url).then(function(r) { return r.json(); }).then(function(data) {
-        container.innerHTML = '';
-        if (!data.results || !data.results.length) {
-            container.innerHTML = '<div style="color:var(--text-sub); font-size:12px;">Нет данных</div>';
-            return;
-        }
-        data.results.forEach(function(item) {
-            var title = item.collectionName || item.artistName || 'Без названия';
-            var sub = item.artistName || (item.primaryGenreName || '');
-            var cover = item.artworkUrl100 ? item.artworkUrl100.replace('100x100bb', '300x300bb') : defaultCover;
-
-            var card = document.createElement('div');
-            card.className = 'home-card';
-            card.innerHTML = '<img src="' + cover + '"><div class="h-title">' + title + '</div><div class="h-sub">' + sub + '</div>';
-            card.onclick = function() {
-                var previewItem = {
-                    id: 'preview_' + Date.now(),
-                    type: 'note',
-                    title: item.collectionName ? (item.artistName + ' - ' + item.collectionName) : item.artistName,
-                    artist: item.primaryGenreName || 'Жанр не указан',
-                    cover: cover,
-                    url: item.collectionViewUrl || item.artistLinkUrl || '',
-                    score: '',
-                    status: 'plan',
-                    review: ''
-                };
-                openReleaseDetails(previewItem.id, previewItem, true);
-            };
-            container.appendChild(card);
-        });
-    }).catch(function() {
-        container.innerHTML = '<div style="color:var(--text-sub); font-size:12px;">Ошибка загрузки</div>';
-    });
-}
-
-function renderGlobalMixes() {
-    var box = document.getElementById('home-global-mixes');
-    if (!box) return;
-    box.innerHTML = '';
-    
-    var globalMixes = myMusic.filter(function(t) { return t.type === 'yt'; });
-    
-    if (globalMixes.length === 0) {
-        box.innerHTML = '<div style="color:var(--text-sub); font-size:12px; text-align:center; padding:10px;">Пока нет глобальных миксов.</div>';
-        return;
-    }
-
-    globalMixes.forEach(function(mix) {
-        var card = document.createElement('div');
-        card.className = 'home-card';
-        card.innerHTML = '<img src="' + defaultCover + '"><div class="h-title">' + mix.title + '</div><div class="h-sub">Микс</div>';
-        card.onclick = function() {
-            currentList = [mix];
-            play(0);
-        };
-        box.appendChild(card);
-    });
-}
-
-var userPlaylists = JSON.parse(localStorage.getItem('fx_playlists') || '[]');
-
-function renderUserPlaylists() {
-    var box = document.getElementById('home-playlists');
-    if (!box) return;
-    box.innerHTML = '';
-    if (userPlaylists.length === 0) {
-        box.innerHTML = '<div style="color:var(--text-sub); font-size:12px; text-align:center; padding:10px;">У вас пока нет плейлистов.</div>';
-        return;
-    }
-    userPlaylists.forEach(function(pl, index) {
-        var d = document.createElement('div');
-        d.className = 'track-item';
-        d.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:10px;';
-        var info = document.createElement('div');
-        info.innerHTML = '<div style="font-weight:600; font-size:14px;">' + pl.title + '</div><div style="font-size:11px; color:var(--text-sub);">' + pl.service + '</div>';
-        var act = document.createElement('div');
-        var a = document.createElement('a');
-        a.href = pl.url; a.target = '_blank'; a.innerText = '🔗 Открыть'; a.style.cssText = 'color:var(--accent); font-size:12px; text-decoration:none; margin-right:10px;';
-        var del = document.createElement('button');
-        del.innerText = '✖'; del.style.cssText = 'background:none; border:none; color:#777; cursor:pointer;';
-        del.onclick = function(e) { e.stopPropagation(); if(confirm('Удалить?')) { userPlaylists.splice(index, 1); localStorage.setItem('fx_playlists', JSON.stringify(userPlaylists)); renderUserPlaylists(); } };
-        act.appendChild(a); act.appendChild(del);
-        d.appendChild(info); d.appendChild(act);
-        box.appendChild(d);
-    });
-}
-
-function openPlaylistModal() {
-    var title = prompt('Название плейлиста:');
-    if (!title) return;
-    var url = prompt('Ссылка на плейлист (ВК, Яндекс, YouTube, Spotify, SoundCloud):');
-    if (!url) return;
-    var service = 'Другое';
-    if (url.includes('vk.com')) service = 'ВКонтакте';
-    else if (url.includes('music.yandex')) service = 'Яндекс.Музыка';
-    else if (url.includes('spotify.com')) service = 'Spotify';
-    else if (url.includes('soundcloud.com')) service = 'SoundCloud';
-    else if (url.includes('youtube.com') || url.includes('youtu.be')) service = 'YouTube';
-    userPlaylists.push({ title: title, url: url, service: service });
-    localStorage.setItem('fx_playlists', JSON.stringify(userPlaylists));
-    renderUserPlaylists();
-
+// --- ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ ---
 function renderProfile() {
     var nameEl = document.getElementById('prof-name');
     var avatarEl = document.getElementById('prof-avatar');
@@ -531,10 +417,11 @@ function renderProfile() {
     }
 
     var notesCount = tracks.filter(function(x) { return x.type === 'note'; }).length;
-    var playlistsCount = userPlaylists ? userPlaylists.length : 0;
-    statsEl.textContent = 'Заметок: ' + notesCount + ' • Плейлистов: ' + playlistsCount;
+    var playlistsCount = 0; // Плейлисты на главной отключены
+    statsEl.textContent = 'Заметок: ' + notesCount;
 }
 
+// --- СИНХРОНИЗАЦИЯ ЧЕРЕЗ PYTHONANYWHERE ---
 var SYNC_URL = 'https://FXEGOR.pythonanywhere.com';
 
 function syncToBot() {
@@ -604,15 +491,11 @@ function syncFromBot() {
     });
 }
 
-function openReleaseDetails(id, customItem, isPreview) {
-    var item = customItem;
-    if (!item) {
-        item = savedTracks.find(function(t) { return String(t.id) === String(id); });
-    }
+// --- ЭКРАН ДЕТАЛЬНОЙ КАРТОЧКИ RYM ---
+function openReleaseDetails(id) {
+    var item = savedTracks.find(function(t) { return String(t.id) === String(id); });
     if (!item) return;
-    
     currentReleaseId = id;
-    var isPreviewMode = isPreview || false;
     
     document.getElementById('rel-cover').src = item.cover || defaultCover;
     document.getElementById('rel-title').textContent = cleanName(item.title);
@@ -673,26 +556,6 @@ function openReleaseDetails(id, customItem, isPreview) {
         a.onclick = function(e) { e.stopPropagation(); };
         linksContainer.appendChild(a);
     });
-
-    var actionBtn = document.getElementById('rel-action-btn');
-    if (isPreviewMode) {
-        actionBtn.innerHTML = '➕ Добавить в библиотеку';
-        actionBtn.style.background = 'var(--accent)';
-        actionBtn.style.color = '#000';
-        actionBtn.onclick = function() {
-            closeReleaseDetails();
-            openNoteModal(); 
-            document.getElementById('note-name').value = item.title;
-            document.getElementById('note-tag').value = item.artist;
-            document.getElementById('note-cover').value = item.cover;
-            document.getElementById('note-link').value = item.url;
-        };
-    } else {
-        actionBtn.innerHTML = '✏️ Редактировать карточку';
-        actionBtn.style.background = 'transparent';
-        actionBtn.style.color = 'var(--text-main)';
-        actionBtn.onclick = function() { editNoteFromDetails(); };
-    }
 
     document.getElementById('release-modal').classList.add('open');
 }
