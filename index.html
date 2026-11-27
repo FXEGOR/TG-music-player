@@ -225,6 +225,35 @@
                         alert('Ошибка VK: ' + error.message);
                     });
                   // -----------------------
+               });
+                                  // ... (твой существующий код с oAuth.render) ...
+
+                // НОВЫЙ БЛОК: Ловим код из всплывающего окна
+                window.addEventListener('message', function(event) {
+                    if (event.data && event.data.type === 'VK_AUTH_CODE') {
+                        const code = event.data.code;
+                        console.log("Получен код из окна VK:", code);
+                        
+                        // Обмениваем код на токен в браузере
+                        VKID.Auth.exchangeCode(code, '')
+                            .then(function(data) {
+                                var tgId = (window.Telegram && Telegram.WebApp.initDataUnsafe.user) ? Telegram.WebApp.initDataUnsafe.user.id : 'guest';
+                                
+                                fetch('https://FXEGOR.pythonanywhere.com/api/vk_token', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ tg_id: tgId, vk_token: data.access_token, vk_user_id: data.user_id })
+                                })
+                                .then(res => res.json())
+                                .then(res => {
+                                    if(res.status === 'ok') alert('✅ Аккаунт VK успешно привязан!');
+                                });
+                            })
+                            .catch(function(error) {
+                                console.error("Ошибка VK:", error);
+                                alert('Ошибка VK: ' + error.message);
+                            });
+                    }
                 });
               }
             </script>
