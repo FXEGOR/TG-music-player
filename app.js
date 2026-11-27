@@ -306,11 +306,14 @@ function renderNotesList() {
         act.appendChild(ed);
         var dl = document.createElement('button');
         dl.innerText = '✖'; dl.style.cssText = 'background:none; border:none; color:#777; font-size:16px; padding:6px; cursor:pointer;';
-        dl.onclick = function(e) { e.stopPropagation(); deleteNote(x.id); };
+                dl.onclick = function(e) { e.stopPropagation(); deleteNote(x.id); };
         act.appendChild(dl);
+        
         d.appendChild(act); 
+        
         d.onclick = function() { openReleaseDetails(x.id); };
-        box.appendChild(d);
+        
+        box.appendChild(d); 
     });
 }
 
@@ -517,8 +520,9 @@ function fetchITunes(query, entity, containerId) {
             card.innerHTML = '<img src="' + cover + '"><div class="h-title">' + title + '</div><div class="h-sub">' + sub + '</div>';
                         card.onclick = function() {
                 // Формируем объект, похожий на нашу заметку, для предпросмотра
+                            card.onclick = function() {
                 var previewItem = {
-                    id: 'preview_' + Date.now(), // Временный ID
+                    id: 'preview_' + Date.now(),
                     type: 'note',
                     title: item.collectionName ? (item.artistName + ' - ' + item.collectionName) : item.artistName,
                     artist: item.primaryGenreName || 'Жанр не указан',
@@ -528,6 +532,8 @@ function fetchITunes(query, entity, containerId) {
                     status: 'plan',
                     review: ''
                 };
+                openReleaseDetails(previewItem.id, previewItem, true);
+            };
                 // Открываем карточку в режиме предпросмотра
                 openReleaseDetails(previewItem.id, previewItem, true);
             };
@@ -726,47 +732,26 @@ var currentReleaseId = null;
 var isPreviewMode = false; // Новая переменная для предпросмотра
 
 function openReleaseDetails(id, customItem, isPreview) {
+// --- ЭКРАН ДЕТАЛЬНОЙ КАРТОЧКИ ---
+var currentReleaseId = null;
+var isPreviewMode = false;
+
+function openReleaseDetails(id, customItem, isPreview) {
     var item = customItem;
     
-    // Если это не предпросмотр (а обычный клик по заметке), ищем в сохраненных
     if (!item) {
         item = savedTracks.find(function(t) { return String(t.id) === String(id); });
     }
     if (!item) return;
     
-    // ЭТА СТРОКА ОСТАЕТСЯ (нужна для кнопки "Редактировать")
     currentReleaseId = id;
     isPreviewMode = isPreview || false;
-
-    var actionBtn = document.getElementById('rel-action-btn');
     
-    if (isPreview) {
-        actionBtn.innerHTML = '➕ Добавить в библиотеку';
-        actionBtn.style.background = 'var(--accent)';
-        actionBtn.style.color = '#000';
-        actionBtn.onclick = function() {
-            closeReleaseDetails();
-            openNoteModal(); // Открываем окно добавления
-            // Заполняем поля данными из предпросмотра
-            document.getElementById('note-name').value = item.title;
-            document.getElementById('note-tag').value = item.artist;
-            document.getElementById('note-cover').value = item.cover;
-            document.getElementById('note-link').value = item.url;
-        };
-    } else {
-        actionBtn.innerHTML = '✏️ Редактировать карточку';
-        actionBtn.style.background = 'transparent';
-        actionBtn.style.color = 'var(--text-main)';
-        actionBtn.onclick = function() { editNoteFromDetails(); };
-    }
-    
-    // Заполняем данные
     document.getElementById('rel-cover').src = item.cover || defaultCover;
     document.getElementById('rel-title').textContent = cleanName(item.title);
     document.getElementById('rel-artist').textContent = item.artist || 'Жанр не указан';
     document.getElementById('rel-genre').textContent = item.tags || ''; 
     
-    // Оценка и статус
     var scoreEl = document.getElementById('rel-score');
     if (item.score) {
         scoreEl.textContent = '★ ' + item.score + '/10';
@@ -781,7 +766,6 @@ function openReleaseDetails(id, customItem, isPreview) {
     document.getElementById('rel-status').textContent = stObj.label;
     document.getElementById('rel-status').style.color = stObj.color;
     
-    // Рецензия
     var reviewEl = document.getElementById('rel-review');
     if (item.review) {
         reviewEl.textContent = item.review;
@@ -793,7 +777,6 @@ function openReleaseDetails(id, customItem, isPreview) {
         reviewEl.style.color = 'var(--text-sub)';
     }
 
-    // --- НОВЫЙ БЛОК ССЫЛОК ---
     var qTitle = cleanName(item.title);
     if (item.artist && qTitle.toLowerCase().includes(item.artist.toLowerCase())) {
         qTitle = qTitle.replace(new RegExp(item.artist, 'ig'), '').replace(/^- /, '').trim();
@@ -824,10 +807,8 @@ function openReleaseDetails(id, customItem, isPreview) {
         linksContainer.appendChild(a);
     });
 
-    // --- НОВАЯ ЛОГИКА КНОПКИ ВНИЗУ ---
     var actionBtn = document.getElementById('rel-action-btn');
     if (isPreviewMode) {
-        // Если открыто с Главной страницы
         actionBtn.innerHTML = '➕ Добавить в библиотеку';
         actionBtn.style.background = 'var(--accent)';
         actionBtn.style.color = '#000';
@@ -840,73 +821,12 @@ function openReleaseDetails(id, customItem, isPreview) {
             document.getElementById('note-link').value = item.url;
         };
     } else {
-        // Если открыто из Заметок
         actionBtn.innerHTML = '✏️ Редактировать карточку';
         actionBtn.style.background = 'transparent';
         actionBtn.style.color = 'var(--text-main)';
         actionBtn.onclick = function() { editNoteFromDetails(); };
     }
 
-    // Показываем экран
-    document.getElementById('release-modal').classList.add('open');
-}
-    
-    // Заполняем данные
-    document.getElementById('rel-cover').src = item.cover || defaultCover;
-    document.getElementById('rel-title').textContent = cleanName(item.title);
-    document.getElementById('rel-artist').textContent = item.artist || 'Неизвестный исполнитель';
-    document.getElementById('rel-genre').textContent = item.artist || 'Жанр не указан';
-    
-    // Оценка и статус
-    var scoreEl = document.getElementById('rel-score');
-    if (item.score) {
-        scoreEl.textContent = '★ ' + item.score + '/10';
-        scoreEl.style.color = '#f59e0b'; // Золотой цвет
-    } else {
-        scoreEl.textContent = 'Без оценки';
-        scoreEl.style.color = 'var(--text-sub)';
-    }
-    
-    var stKey = item.status || (item.done ? 'done' : 'plan');
-    var stObj = statusMap[stKey] || statusMap.plan;
-    document.getElementById('rel-status').textContent = stObj.label;
-    document.getElementById('rel-status').style.color = stObj.color;
-    
-    // Рецензия
-    var reviewEl = document.getElementById('rel-review');
-    if (item.review) {
-        reviewEl.textContent = item.review;
-        reviewEl.style.fontStyle = 'normal';
-    } else {
-        reviewEl.textContent = 'Вы еще не написали рецензию...';
-        reviewEl.style.fontStyle = 'italic';
-        reviewEl.style.color = 'var(--text-sub)';
-    }
-
-    // Генерируем ссылки для поиска
-    var query = encodeURIComponent((item.artist ? item.artist + ' ' : '') + cleanName(item.title));
-    var linksContainer = document.getElementById('rel-links');
-    linksContainer.innerHTML = ''; // Очищаем старое
-    
-    var services = [
-        { name: 'VK Музыка', icon: '🎵', url: 'https://vk.com/audio?q=' + query, color: '#0077FF' },
-        { name: 'Яндекс', icon: '🔔', url: 'https://music.yandex.ru/search?text=' + query, color: '#FFCC00' },
-        { name: 'YouTube', icon: '▶️', url: 'https://music.youtube.com/search?q=' + query, color: '#FF0000' },
-        { name: 'Spotify', icon: '🟢', url: 'https://open.spotify.com/search/' + query, color: '#1DB954' }
-    ];
-
-    services.forEach(function(s) {
-        var a = document.createElement('a');
-        a.href = s.url;
-        a.target = '_blank';
-        a.style.cssText = 'display:flex; align-items:center; gap:6px; background: var(--bg-card); padding: 8px 12px; border-radius: 8px; text-decoration: none; color: var(--text-main); font-size: 12px; font-weight: bold; border: 1px solid var(--border);';
-        a.innerHTML = '<span>' + s.icon + '</span> ' + s.name;
-        // При клике не открываем саму карточку еще раз
-        a.onclick = function(e) { e.stopPropagation(); };
-        linksContainer.appendChild(a);
-    });
-
-    // Показываем экран
     document.getElementById('release-modal').classList.add('open');
 }
 
