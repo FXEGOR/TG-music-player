@@ -14,6 +14,7 @@ var tracks = myMusic.slice();
 var activeTab = 'media', currentPl = 'all', currentList = [], noteFilter = 'all', noteGrid = false, idx = 0, repeatMode = 0;
 var audio = document.getElementById('audio'), ytBox = document.getElementById('yt-container'), ytFrame = document.getElementById('yt-frame');
 var vkPlayerObj = null;
+var currentReleaseId = null;
 
 var statusMap = {
     plan: { label: '📋 В планах', color: '#888888' },
@@ -23,7 +24,6 @@ var statusMap = {
     drop: { label: '🗑 Брошено', color: '#ef4444' }
 };
 
-// --- БАЗОВЫЕ УТИЛИТЫ ---
 function cleanName(name) {
     var str = Array.isArray(name) ? name.join('') : String(name || 'Без названия');
     return str.replace(/\.(mp3|m4a|ogg|wav)$/i, '').replace(/,\s*$/, '');
@@ -67,7 +67,7 @@ function init() {
         grid.appendChild(d);
     });
 
-    var startTab = localStorage.getItem('fx_start_tab') || 'media';
+    var startTab = localStorage.getItem('fx_start_tab') || 'home'; // Теперь по умолчанию Главная
     updateStartButtons(startTab);
 
     loadCloudTracks(function() {
@@ -77,7 +77,6 @@ function init() {
     });
 }
 
-// --- ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ---
 function switchTab(tab) {
     activeTab = tab;
     var tabs = ['home', 'media', 'notes', 'settings'];
@@ -86,8 +85,9 @@ function switchTab(tab) {
         if (el) el.style.display = (t === tab) ? 'block' : 'none';
         var navEl = document.getElementById('nav-' + t);
         if (navEl) navEl.classList.toggle('active', t === tab);
-        if (tab === 'settings') renderProfile();
     });
+
+    if (tab === 'settings') renderProfile();
 
     var titles = { home: 'Главная', media: 'Медиа', notes: 'Артисты и заметки', settings: 'Настройки' };
     document.getElementById('page-title').innerText = titles[tab] || 'FXMusic';
@@ -112,7 +112,6 @@ function renderCurrentTab() {
     else if (activeTab === 'notes') renderNotesList(); 
 }
 
-// --- НАСТРОЙКИ И UI ---
 function seekAudio(val) { if (audio.duration) audio.currentTime = (val / 100) * audio.duration; }
 function fmtTime(sec) { var m = Math.floor(sec / 60), s = Math.floor(sec % 60); return m + ':' + (s < 10 ? '0' : '') + s; }
 function setTheme(t) {
@@ -132,11 +131,11 @@ function openNoteModal() {
     document.getElementById('note-edit-id').value = ''; document.getElementById('note-name').value = '';
     document.getElementById('note-status').value = 'plan'; document.getElementById('note-score').value = '';
     document.getElementById('note-tag').value = ''; document.getElementById('note-link').value = '';
+    document.getElementById('note-review').value = '';
     document.getElementById('note-modal').style.display = 'flex';
 }
 function closeNoteModal() { document.getElementById('note-modal').style.display = 'none'; }
 
-// --- ЗАМЕТКИ ---
 function editNote(id) {
     var item = savedTracks.find(function(t) { return String(t.id) === String(id); });
     if (!item) return;
@@ -148,10 +147,7 @@ function editNote(id) {
     document.getElementById('note-tag').value = item.artist || '';
     document.getElementById('note-link').value = item.url || '';
     document.getElementById('note-cover').value = item.cover || '';
-    document.getElementById('note-modal').style.display = 'flex';
-     // ДОБАВЛЕНА СТРОКА ДЛЯ РЕЦЕНЗИИ:
     document.getElementById('note-review').value = item.review || '';
-    
     document.getElementById('note-modal').style.display = 'flex';
 }
 
@@ -160,7 +156,6 @@ function saveNote() {
     var status = document.getElementById('note-status').value, score = document.getElementById('note-score').value;
     var tag = document.getElementById('note-tag').value.trim(), link = document.getElementById('note-link').value.trim();
     var cover = document.getElementById('note-cover').value;
-     // ДОБАВЛЕНА СТРОКА ДЛЯ РЕЦЕНЗИИ:
     var review = document.getElementById('note-review').value.trim();
     
     if (!name) { alert('Введи имя артиста или название!'); return; }
@@ -168,12 +163,10 @@ function saveNote() {
     if (editId) {
         savedTracks.forEach(function(t) { 
             if (String(t.id) === String(editId)) { 
-                t.title = name; t.status = status; t.score = score; t.artist = tag; t.url = link; t.cover = cover; 
-                t.review = review; // <-- СОХРАНЯЕМ РЕЦЕНЗИЮ ТУТ
+                t.title = name; t.status = status; t.score = score; t.artist = tag; t.url = link; t.cover = cover; t.review = review;
             } 
         });
     } else {
-        // СОХРАНЯЕМ РЕЦЕНЗИЮ ТУТ
         savedTracks.unshift({ id: Date.now(), type: 'note', title: name, status: status, score: score, artist: tag, pl: 'notes', url: link, cover: cover, review: review });
     }
     saveCloudTracks(); tracks = myMusic.concat(savedTracks); closeNoteModal(); renderNotesList();
@@ -192,29 +185,6 @@ function saveYtVideo() {
     closeVideoModal(); selectMediaSection(currentPl, document.getElementById('media-sub-title').innerText);
 }
 
-function exportData() {
-    var str = JSON.stringify(savedTracks);
-    if (navigator.clipboard) { navigator.clipboard.writeText(str); alert('Код скопирован! Отправь его себе в Избранное.'); }
-    else { prompt('Скопируй этот код:', str); }
-}
-
-function importData() {
-    var str = prompt('Вставь скопированный код:');
-    if (!str) return;
-    try {
-        var parsed = JSON.parse(str), added = 0;
-        if (Array.isArray(parsed)) {
-            parsed.forEach(function(item) {
-                var exists = savedTracks.some(function(ex) { return (item.type === 'yt' && ex.ytId === item.ytId) || (item.type === 'note' && (ex.id === item.id || (ex.title === item.title && ex.url === item.url))); });
-                if (!exists) { savedTracks.unshift(item); added++; }
-            });
-            saveCloudTracks(); tracks = myMusic.concat(savedTracks); renderCurrentTab();
-            alert('Синхронизация завершена! Новых записей: ' + added);
-        }
-    } catch(e) { alert('Ошибка: неверный формат кода.'); }
-}
-
-// --- МЕДИА ---
 function selectMediaSection(id, name) {
     currentPl = id;
     document.getElementById('media-sub-title').innerText = name;
@@ -306,18 +276,15 @@ function renderNotesList() {
         act.appendChild(ed);
         var dl = document.createElement('button');
         dl.innerText = '✖'; dl.style.cssText = 'background:none; border:none; color:#777; font-size:16px; padding:6px; cursor:pointer;';
-                dl.onclick = function(e) { e.stopPropagation(); deleteNote(x.id); };
+        dl.onclick = function(e) { e.stopPropagation(); deleteNote(x.id); };
         act.appendChild(dl);
         
         d.appendChild(act); 
-        
         d.onclick = function() { openReleaseDetails(x.id); };
-        
-        box.appendChild(d); 
+        box.appendChild(d);
     });
 }
 
-// --- ПЛЕЕР ---
 function play(i) {
     idx = i;
     var x = currentList[idx];
@@ -371,55 +338,6 @@ audio.addEventListener('timeupdate', function() {
     document.getElementById('big-cur').innerText = c; document.getElementById('big-dur').innerText = d;
 });
 
-// --- ЭКСПОРТ/ИМПОРТ ---
-function exportFile() {
-    var blob = new Blob([JSON.stringify(savedTracks, null, 2)], { type: 'application/json' });
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'fxmusic_backup.json';
-    a.click();
-}
-function importFile(e) {
-    var file = e.target.files[0];
-    if (!file) return;
-    var reader = new FileReader();
-    reader.onload = function(ev) {
-        try {
-            var parsed = JSON.parse(ev.target.result), added = 0;
-            if (Array.isArray(parsed)) {
-                parsed.forEach(function(item) {
-                    var exists = savedTracks.some(function(ex) { return (item.type === 'yt' && ex.ytId === item.ytId) || (item.type === 'note' && (ex.id === item.id || (ex.title === item.title && ex.url === item.url))); });
-                    if (!exists) { savedTracks.unshift(item); added++; }
-                });
-                saveCloudTracks(); tracks = myMusic.concat(savedTracks); renderCurrentTab();
-                alert('Готово! Добавлено новых записей: ' + added);
-            }
-        } catch(err) { alert('Ошибка чтения файла.'); }
-    };
-    reader.readAsText(file);
-}
-function exportChunks() {
-    var total = savedTracks.length;
-    if (!total) { alert('Список пуст!'); return; }
-    var chunks = [], cur = [];
-    savedTracks.forEach(function(item) {
-        cur.push(item);
-        if (JSON.stringify(cur).length > 3200) {
-            cur.pop(); chunks.push(JSON.stringify(cur)); cur = [item];
-        }
-    });
-    if (cur.length) chunks.push(JSON.stringify(cur));
-    function copyNext(idx) {
-        if (idx >= chunks.length) { alert('Все части скопированы!'); return; }
-        navigator.clipboard.writeText(chunks[idx]).then(function() {
-            if (chunks.length === 1) alert('База скопирована целиком!');
-            else if (confirm('Часть ' + (idx + 1) + ' из ' + chunks.length + ' скопирована! Нажми ОК для следующей.')) copyNext(idx + 1);
-        });
-    }
-    copyNext(0);
-}
-
-// --- ПОИСК ITUNES ---
 var searchTimer = null;
 var apiBase = atob('aHR0cHM6Ly9pdHVuZXMuYXBwbGUuY29tL3NlYXJjaD90ZXJtPQ==');
 function searchCatalog(q) {
@@ -460,7 +378,6 @@ function searchCatalog(q) {
     }, 400);
 }
 
-// --- ЛОГИКА ГЛАВНОГО ЭКРАНА ---
 var homeDataLoaded = false;
 
 function renderHomePage() {
@@ -473,29 +390,7 @@ function renderHomePage() {
     fetchITunes('indie', 'album', 'home-recommended');
     
     renderUserPlaylists();
-    
-    function renderGlobalMixes() {
-    var box = document.getElementById('home-global-mixes');
-    if (!box) return;
-    box.innerHTML = '';
-    
-    // Берем только жестко заданные миксы из customMusic
-    var globalMixes = customMusic.filter(function(t) { return t.type === 'yt'; });
-    
-    globalMixes.forEach(function(mix) {
-        var card = document.createElement('div');
-        card.className = 'home-card';
-        // Заглушка для обложки микса
-        card.innerHTML = '<img src="' + defaultCover + '"><div class="h-title">' + mix.title + '</div><div class="h-sub">Микс</div>';
-        
-        card.onclick = function() {
-            // Тут можно либо запустить плеер, либо открыть карточку
-            currentList = [mix];
-            play(0);
-        };
-        box.appendChild(card);
-    });
-}
+    renderGlobalMixes();
 }
 
 function fetchITunes(query, entity, containerId) {
@@ -518,9 +413,7 @@ function fetchITunes(query, entity, containerId) {
             var card = document.createElement('div');
             card.className = 'home-card';
             card.innerHTML = '<img src="' + cover + '"><div class="h-title">' + title + '</div><div class="h-sub">' + sub + '</div>';
-                        card.onclick = function() {
-                // Формируем объект, похожий на нашу заметку, для предпросмотра
-                            card.onclick = function() {
+            card.onclick = function() {
                 var previewItem = {
                     id: 'preview_' + Date.now(),
                     type: 'note',
@@ -534,11 +427,6 @@ function fetchITunes(query, entity, containerId) {
                 };
                 openReleaseDetails(previewItem.id, previewItem, true);
             };
-                // Открываем карточку в режиме предпросмотра
-                openReleaseDetails(previewItem.id, previewItem, true);
-            };
-                if (item.collectionViewUrl || item.artistLinkUrl) document.getElementById('note-link').value = item.collectionViewUrl || item.artistLinkUrl;
-            };
             container.appendChild(card);
         });
     }).catch(function() {
@@ -546,7 +434,30 @@ function fetchITunes(query, entity, containerId) {
     });
 }
 
-// --- ПОЛЬЗОВАТЕЛЬСКИЕ ПЛЕЙЛИСТЫ ---
+function renderGlobalMixes() {
+    var box = document.getElementById('home-global-mixes');
+    if (!box) return;
+    box.innerHTML = '';
+    
+    var globalMixes = myMusic.filter(function(t) { return t.type === 'yt'; });
+    
+    if (globalMixes.length === 0) {
+        box.innerHTML = '<div style="color:var(--text-sub); font-size:12px; text-align:center; padding:10px;">Пока нет глобальных миксов.</div>';
+        return;
+    }
+
+    globalMixes.forEach(function(mix) {
+        var card = document.createElement('div');
+        card.className = 'home-card';
+        card.innerHTML = '<img src="' + defaultCover + '"><div class="h-title">' + mix.title + '</div><div class="h-sub">Микс</div>';
+        card.onclick = function() {
+            currentList = [mix];
+            play(0);
+        };
+        box.appendChild(card);
+    });
+}
+
 var userPlaylists = JSON.parse(localStorage.getItem('fx_playlists') || '[]');
 
 function renderUserPlaylists() {
@@ -591,7 +502,6 @@ function openPlaylistModal() {
     renderUserPlaylists();
 }
 
-// --- ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ ---
 function renderProfile() {
     var nameEl = document.getElementById('prof-name');
     var avatarEl = document.getElementById('prof-avatar');
@@ -599,45 +509,36 @@ function renderProfile() {
 
     if (!nameEl || !avatarEl || !statsEl) return;
 
-    // Проверяем, загрузился ли вообще скрипт Telegram
     if (!window.Telegram || !Telegram.WebApp) {
         nameEl.textContent = 'Ошибка: Скрипт TG не загружен';
         avatarEl.src = 'https://ui-avatars.com/api/?name=X&background=ff0000&color=fff&rounded=true';
         return;
     }
 
-    // Пытаемся получить данные
     var user = Telegram.WebApp.initDataUnsafe ? Telegram.WebApp.initDataUnsafe.user : null;
 
     if (user) {
         var fullName = (user.first_name || '') + (user.last_name ? ' ' + user.last_name : '');
         nameEl.textContent = fullName.trim() || 'Пользователь Telegram';
-        
         if (user.photo_url) {
             avatarEl.src = user.photo_url;
         } else {
             avatarEl.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(fullName || 'U') + '&background=1db954&color=fff&rounded=true';
         }
     } else {
-        // Если данные не пришли, выводим понятную причину
         nameEl.textContent = 'Данные не получены';
         avatarEl.src = 'https://ui-avatars.com/api/?name=?&background=333333&color=fff&rounded=true';
-        
-        // Выводим сырые данные для отладки прямо в статистику
         var debugInfo = Telegram.WebApp.initData ? 'Есть initData' : 'Пустой initData';
         statsEl.textContent = 'Открыто не по прямой ссылке. ' + debugInfo;
         return;
     }
 
-    // Считаем статистику
     var notesCount = tracks.filter(function(x) { return x.type === 'note'; }).length;
     var playlistsCount = userPlaylists ? userPlaylists.length : 0;
-    
     statsEl.textContent = 'Заметок: ' + notesCount + ' • Плейлистов: ' + playlistsCount;
 }
 
-// --- СИНХРОНИЗАЦИЯ ЧЕРЕЗ PYTHONANYWHERE ---
-var SYNC_URL = 'https://FXEGOR.pythonanywhere.com'; // ЗАМЕНИТЬ!
+var SYNC_URL = 'https://FXEGOR.pythonanywhere.com';
 
 function syncToBot() {
     var statusEl = document.getElementById('sync-status');
@@ -645,10 +546,8 @@ function syncToBot() {
         if (statusEl) statusEl.textContent = 'Ошибка: открой через кнопку Menu в боте';
         return;
     }
-    
     var userId = Telegram.WebApp.initDataUnsafe.user.id;
     var dataStr = JSON.stringify(savedTracks);
-    
     if (statusEl) statusEl.textContent = 'Сохранение в облако...';
 
     fetch(SYNC_URL + '/api/save', {
@@ -660,7 +559,7 @@ function syncToBot() {
     .then(function(res) {
         if (res.status === 'ok') {
             if (statusEl) statusEl.textContent = '✅ База сохранена в облаке!';
-            alert('Успех! Твоя база сохранена на сервере. Теперь её можно загрузить с любого устройства.');
+            alert('Успех! Твоя база сохранена на сервере.');
         } else {
             if (statusEl) statusEl.textContent = '❌ Ошибка сохранения';
         }
@@ -677,7 +576,6 @@ function syncFromBot() {
         if (statusEl) statusEl.textContent = 'Ошибка: открой через кнопку Menu в боте';
         return;
     }
-
     var userId = Telegram.WebApp.initDataUnsafe.user.id;
     if (statusEl) statusEl.textContent = 'Загрузка из облака...';
 
@@ -688,12 +586,10 @@ function syncFromBot() {
             var parsed = JSON.parse(res.data);
             if (Array.isArray(parsed)) {
                 savedTracks = parsed;
-                // Сохраняем локально
                 localStorage.setItem('my_tg_tracks', JSON.stringify(savedTracks));
                 if (window.Telegram && Telegram.WebApp.CloudStorage) {
                     Telegram.WebApp.CloudStorage.setItem('my_tg_tracks', JSON.stringify(savedTracks));
                 }
-                // Обновляем интерфейс
                 tracks = myMusic.concat(savedTracks);
                 renderCurrentTab();
                 renderProfile();
@@ -702,7 +598,7 @@ function syncFromBot() {
             }
         } else {
             if (statusEl) statusEl.textContent = '❌ На сервере нет сохранений';
-            alert('На сервере пока нет сохранений. Сначала нажми "Сохранить в облако".');
+            alert('На сервере пока нет сохранений.');
         }
     })
     .catch(function(e) { 
@@ -710,42 +606,16 @@ function syncFromBot() {
         console.error(e);
     });
 }
-// --- ЭКРАН ДЕТАЛЬНОЙ КАРТОЧКИ ---
-var currentReleaseId = null;
-var isPreviewMode = false;
 
-function openReleaseDetails(id, customItem = null, isPreview = false) {
+function openReleaseDetails(id, customItem, isPreview) {
     var item = customItem;
-    
-    // Если это не предпросмотр, ищем в сохраненных
     if (!item) {
         item = savedTracks.find(function(t) { return String(t.id) === String(id); });
     }
     if (!item) return;
     
     currentReleaseId = id;
-    isPreviewMode = isPreview;
-    
-    // ... (тут идет заполнение rel-cover, rel-title, rel-artist, rel-genre и т.д. - оставляем как было) ...
-    // --- ЭКРАН ДЕТАЛЬНОЙ КАРТОЧКИ ---
-var currentReleaseId = null;
-var isPreviewMode = false; // Новая переменная для предпросмотра
-
-function openReleaseDetails(id, customItem, isPreview) {
-// --- ЭКРАН ДЕТАЛЬНОЙ КАРТОЧКИ ---
-var currentReleaseId = null;
-var isPreviewMode = false;
-
-function openReleaseDetails(id, customItem, isPreview) {
-    var item = customItem;
-    
-    if (!item) {
-        item = savedTracks.find(function(t) { return String(t.id) === String(id); });
-    }
-    if (!item) return;
-    
-    currentReleaseId = id;
-    isPreviewMode = isPreview || false;
+    var isPreviewMode = isPreview || false;
     
     document.getElementById('rel-cover').src = item.cover || defaultCover;
     document.getElementById('rel-title').textContent = cleanName(item.title);
