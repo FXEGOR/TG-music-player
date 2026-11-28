@@ -135,8 +135,13 @@ function openNoteModal() {
     document.getElementById('note-tag').value = ''; document.getElementById('note-link').value = '';
     document.getElementById('note-review').value = '';
     document.getElementById('note-modal').style.display = 'flex';
+    document.getElementById('note-cover').value = '';
+    document.getElementById('api-results').style.display = 'none';
 }
-function closeNoteModal() { document.getElementById('note-modal').style.display = 'none'; }
+function closeNoteModal() { 
+    document.getElementById('note-cover').value = '';
+    document.getElementById('api-results').style.display = 'none';
+    document.getElementById('note-modal').style.display = 'none';
 
 // --- ЗАМЕТКИ ---
 function editNote(id) {
