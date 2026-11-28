@@ -129,7 +129,6 @@ function openVideoModal() { document.getElementById('video-modal').style.display
 function closeVideoModal() { document.getElementById('video-modal').style.display = 'none'; }
 
 function openNoteModal() {
-    function openNoteModal() {
     document.getElementById('note-modal-title').innerText = 'Новая карточка';
     document.getElementById('note-edit-id').value = '';
     document.getElementById('note-name').value = '';
