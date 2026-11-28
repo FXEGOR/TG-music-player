@@ -142,6 +142,7 @@ function closeNoteModal() {
     document.getElementById('note-cover').value = '';
     document.getElementById('api-results').style.display = 'none';
     document.getElementById('note-modal').style.display = 'none';
+}
 
 // --- ЗАМЕТКИ ---
 function editNote(id) {
