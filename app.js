@@ -129,11 +129,17 @@ function openVideoModal() { document.getElementById('video-modal').style.display
 function closeVideoModal() { document.getElementById('video-modal').style.display = 'none'; }
 
 function openNoteModal() {
+    function openNoteModal() {
     document.getElementById('note-modal-title').innerText = 'Новая карточка';
-    document.getElementById('note-edit-id').value = ''; document.getElementById('note-name').value = '';
-    document.getElementById('note-status').value = 'plan'; document.getElementById('note-score').value = '';
-    document.getElementById('note-tag').value = ''; document.getElementById('note-link').value = '';
+    document.getElementById('note-edit-id').value = '';
+    document.getElementById('note-name').value = '';
+    document.getElementById('note-status').value = 'plan';
+    document.getElementById('note-score').value = '';
+    document.getElementById('note-tag').value = '';
+    document.getElementById('note-link').value = '';
+    document.getElementById('note-cover').value = '';
     document.getElementById('note-review').value = '';
+    document.getElementById('api-results').style.display = 'none';
     document.getElementById('note-modal').style.display = 'flex';
 }
 function closeNoteModal() { document.getElementById('note-modal').style.display = 'none'; }
